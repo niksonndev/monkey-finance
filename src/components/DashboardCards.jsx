@@ -29,42 +29,51 @@ const cards = [
   },
 ];
 
+/**
+ * Resumo do mês (saldo, receitas, despesas).
+ *
+ * Cards em linha, com ícone à esquerda e o valor ao lado: empilhados em coluna
+ * cheia, os três ocupavam quase a tela inteira no celular e empurravam a lista
+ * de transações para fora da primeira rolagem. No celular o saldo ocupa a linha
+ * toda e receitas/despesas dividem a de baixo; a partir de sm os três ficam
+ * lado a lado, como no desktop.
+ */
 export default function DashboardCards({ stats }) {
   const { formatValue } = useCurrency();
 
   return (
-    <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4'>
-      {cards.map((card, index) => (
-        <motion.div
-          key={card.value}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-          className='card group p-3 sm:p-4'
-        >
-          <div className='flex items-center justify-between'>
-            <div className={`p-2 sm:p-3 rounded-xl ${card.bg}`}>
-              <card.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${card.color}`} />
+    <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4'>
+      {cards.map((card, index) => {
+        const destaque = card.value === 'balance';
+        const negativo = card.value === 'balance' && stats.balance < 0;
+
+        return (
+          <motion.div
+            key={card.value}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className={`card flex items-center gap-3 p-3 sm:p-4 ${
+              destaque ? 'col-span-2 sm:col-span-1' : ''
+            }`}
+          >
+            <div className={`shrink-0 rounded-xl p-2 sm:p-2.5 ${card.bg}`}>
+              <card.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${card.color}`} />
             </div>
-          </div>
-          <div className='mt-3 sm:mt-4'>
-            <p className='text-xs sm:text-sm text-monkey-muted'>{card.title}</p>
-            <p
-              className={`text-lg sm:text-xl sm:text-2xl font-bold mt-1 truncate ${
-                card.value === 'balance' && stats.balance < 0
-                  ? 'text-monkey-danger'
-                  : 'text-monkey-text'
-              }`}
-            >
-              {card.value === 'balance' && formatValue(stats.balance)}
-              {card.value === 'income' &&
-                `${card.prefix}${formatValue(stats.income)}`}
-              {card.value === 'expenses' &&
-                `${card.prefix}${formatValue(stats.expenses)}`}
-            </p>
-          </div>
-        </motion.div>
-      ))}
+
+            <div className='min-w-0'>
+              <p className='truncate text-xs text-monkey-muted'>{card.title}</p>
+              <p
+                className={`truncate text-base font-bold tabular-nums sm:text-lg ${
+                  negativo ? 'text-monkey-danger' : 'text-monkey-text'
+                }`}
+              >
+                {`${card.prefix}${formatValue(stats[card.value])}`}
+              </p>
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
