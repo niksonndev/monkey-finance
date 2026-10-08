@@ -6,9 +6,9 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 import './index.css';
 
 /**
- * O app é publicado numa subpasta no GitHub Pages (/m-nance/), então o router
- * precisa do basename: sem ele, qualquer navigate('/login') ou NavLink sai na
- * raiz do domínio e a navegação quebra fora da base.
+ * O app é publicado numa subpasta no GitHub Pages (/monkey-finance/), então o
+ * router precisa do basename: sem ele, qualquer navigate('/login') ou NavLink
+ * sai na raiz do domínio e a navegação quebra fora da base.
  */
 const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
 

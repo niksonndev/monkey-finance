@@ -15,7 +15,7 @@
  *   dados financeiros nunca são cacheados no service worker.
  */
 
-const CACHE_PREFIX = 'monkeynanca';
+const CACHE_PREFIX = 'monkey-finance';
 const MANIFEST_URL = 'precache-manifest.json';
 const FALLBACK_URL = 'index.html';
 

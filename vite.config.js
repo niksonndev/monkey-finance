@@ -17,7 +17,7 @@ import { join, relative, sep } from 'node:path';
  * precache — precisa ser relativo a este caminho. Ao mover para um domínio
  * próprio na raiz, basta trocar para '/'.
  */
-const BASE = '/m-nance/';
+const BASE = '/monkey-finance/';
 
 /** Extensões que entram no precache do service worker. */
 const PRECACHE_PATTERN = /\.(?:js|css|html|svg|png|ico|webmanifest|woff2?)$/;
@@ -50,7 +50,7 @@ const toAssetPath = (file) => relative('dist', file).split(sep).join('/');
  */
 function pwaBuild() {
   return {
-    name: 'monkeynanca:pwa-build',
+    name: 'monkey-finance:pwa-build',
     apply: 'build',
     closeBundle() {
       copyFileSync(join('dist', 'index.html'), join('dist', '404.html'));

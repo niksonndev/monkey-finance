@@ -71,7 +71,8 @@ export function AuthProvider({ children }) {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // Volta para a raiz do app, respeitando a base (/m-nance/ no Pages).
+        // Volta para a raiz do app, respeitando a base (/monkey-finance/ no
+        // Pages).
         redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
       },
     });

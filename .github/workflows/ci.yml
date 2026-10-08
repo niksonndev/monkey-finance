@@ -66,8 +66,8 @@ jobs:
           retention-days: 7
 
   # Publica no GitHub Pages apenas em push na master (PR não mexe no site).
-  # O site fica em subpasta — https://niksonndev.github.io/m-nance/ — por isso
-  # o build usa base '/m-nance/' e o PWA é todo relativo à base.
+  # O site fica em subpasta — https://niksonndev.github.io/monkey-finance/ —
+  # por isso o build usa base '/monkey-finance/' e o PWA é todo relativo à base.
   deploy:
     name: Publicar no GitHub Pages
     needs: qualidade
