@@ -1,11 +1,6 @@
+import { useMemo } from 'react';
 import { Doughnut } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
 import { motion } from 'framer-motion';
 import {
   CATEGORY_COLORS,
@@ -13,8 +8,22 @@ import {
 } from '../constants/categories';
 import { useCurrency } from '../context/CurrencyContext';
 
-ChartJS.register(CategoryScale, ArcElement, Tooltip, Legend);
+// Só o que a rosca precisa: a legenda nativa do Chart.js não é usada (a lista
+// abaixo do gráfico já é a legenda), então Legend fica de fora do registro.
+ChartJS.register(ArcElement, Tooltip);
 
+/** Porcentagem no padrão pt-BR: vírgula decimal e sem ",0" sobrando. */
+const formatPercent = (valor) =>
+  `${valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+
+/**
+ * Gráfico de rosca por categoria.
+ *
+ * A legenda é uma lista própria em vez da nativa do Chart.js: ela cabe valor e
+ * porcentagem (a nativa só repete cor e nome), sai ordenada da maior fatia para
+ * a menor e usa o padrão pt-BR. O total ocupa o vão central da rosca, que de
+ * outra forma ficaria vazio.
+ */
 export default function PieChart({
   data,
   labels,
@@ -23,33 +32,31 @@ export default function PieChart({
 }) {
   const { formatValue } = useCurrency();
 
-  if (!data || data.length === 0 || data.every((d) => d === 0)) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className='card flex flex-col items-center justify-center min-h-[300px]'
-      >
-        <div className='text-center'>
-          <p className='text-monkey-muted'>{emptyMessage}</p>
-        </div>
-      </motion.div>
-    );
-  }
+  // Ordena por valor e descarta fatia zerada: categoria sem lançamento no mês
+  // não precisa ocupar linha na legenda.
+  const slices = useMemo(() => {
+    if (!Array.isArray(data) || !Array.isArray(labels)) return [];
 
-  const backgroundColors = labels.map(
-    (label, index) =>
-      CATEGORY_COLORS[label] || DEFAULT_CHART_COLORS[index % DEFAULT_CHART_COLORS.length],
-  );
+    return labels
+      .map((label, index) => ({
+        label,
+        value: Number(data[index]) || 0,
+        color:
+          CATEGORY_COLORS[label] ||
+          DEFAULT_CHART_COLORS[index % DEFAULT_CHART_COLORS.length],
+      }))
+      .filter((slice) => slice.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [data, labels]);
 
-  const total = data.reduce((a, b) => a + b, 0);
+  const total = slices.reduce((sum, slice) => sum + slice.value, 0);
 
   const chartData = {
-    labels,
+    labels: slices.map((slice) => slice.label),
     datasets: [
       {
-        data,
-        backgroundColor: backgroundColors,
+        data: slices.map((slice) => slice.value),
+        backgroundColor: slices.map((slice) => slice.color),
         borderWidth: 0,
         hoverOffset: 8,
       },
@@ -59,22 +66,9 @@ export default function PieChart({
   const options = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '65%',
+    cutout: '68%',
     plugins: {
-      legend: {
-        position: window.innerWidth < 640 ? 'bottom' : 'right',
-        labels: {
-          color: '#e8e8e8',
-          font: {
-            family: 'Inter',
-            size: 11,
-          },
-          padding: 12,
-          usePointStyle: true,
-          pointStyle: 'circle',
-          boxWidth: 8,
-        },
-      },
+      legend: { display: false },
       tooltip: {
         backgroundColor: '#16213e',
         titleColor: '#e8e8e8',
@@ -86,8 +80,9 @@ export default function PieChart({
         callbacks: {
           label: (context) => {
             const value = context.raw;
-            const percentage = ((value / total) * 100).toFixed(1);
-            return `${context.label}: ${formatValue(value)} (${percentage}%)`;
+            return `${context.label}: ${formatValue(value)} (${formatPercent(
+              (value / total) * 100,
+            )})`;
           },
         },
       },
@@ -101,49 +96,58 @@ export default function PieChart({
       transition={{ duration: 0.5 }}
       className='card'
     >
+      {/* O título aparece mesmo sem dados: sem ele, dois cards vazios no
+          dashboard ficariam indistinguíveis. */}
       {title && (
         <h3 className='text-lg font-semibold text-monkey-text mb-4'>{title}</h3>
       )}
 
-      {/* Container responsivo */}
-      <div className='flex flex-col sm:flex-row items-center gap-4'>
-        {/* Gráfico */}
-        <div className='h-[200px] sm:h-[250px] w-full sm:w-1/2'>
-          <Doughnut data={chartData} options={options} />
+      {slices.length === 0 ? (
+        <div className='flex items-center justify-center min-h-[140px] px-2'>
+          <p className='text-monkey-muted text-sm text-center'>
+            {emptyMessage}
+          </p>
         </div>
+      ) : (
+        <div className='flex flex-col items-center gap-4'>
+          {/* Gráfico. Empilhado em TODAS as larguras: a coluna do dashboard tem
+              320px, e lado a lado o nome da categoria não cabia na lista (saía
+              truncado em "G..."). */}
+          <div className='relative h-[200px] w-full'>
+            <Doughnut data={chartData} options={options} />
 
-        {/* Legenda customizada para mobile */}
-        <div className='w-full sm:w-1/2 space-y-2'>
-          {labels.map((label, index) => {
-            const value = data[index];
-            const percentage = ((value / total) * 100).toFixed(1);
-            const color = backgroundColors[index];
+            {/* Total no vão central da rosca */}
+            <div className='pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center'>
+              <span className='text-[10px] uppercase tracking-wide text-monkey-muted'>
+                Total
+              </span>
+              <span className='text-sm font-semibold text-monkey-text tabular-nums leading-tight'>
+                {formatValue(total)}
+              </span>
+            </div>
+          </div>
 
-            return (
-              <div
-                key={label}
-                className='flex items-center justify-between text-sm'
-              >
-                <div className='flex items-center gap-2'>
-                  <div
-                    className='w-3 h-3 rounded-full flex-shrink-0'
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className='text-monkey-text truncate'>{label}</span>
-                </div>
-                <div className='text-right'>
-                  <span className='text-monkey-text font-medium'>
-                    {formatValue(value)}
-                  </span>
-                  <span className='text-monkey-muted text-xs ml-2'>
-                    {percentage}%
-                  </span>
-                </div>
+          {/* Legenda: mesma ordem das fatias, com valor e porcentagem */}
+          <div className='w-full space-y-2'>
+            {slices.map((slice) => (
+              <div key={slice.label} className='flex items-center gap-2 text-sm'>
+                <span
+                  aria-hidden='true'
+                  className='w-3 h-3 rounded-full flex-shrink-0'
+                  style={{ backgroundColor: slice.color }}
+                />
+                <span className='text-monkey-text truncate'>{slice.label}</span>
+                <span className='ml-auto font-medium text-monkey-text tabular-nums whitespace-nowrap'>
+                  {formatValue(slice.value)}
+                </span>
+                <span className='w-11 text-right text-xs text-monkey-muted tabular-nums'>
+                  {formatPercent((slice.value / total) * 100)}
+                </span>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </motion.div>
   );
 }
