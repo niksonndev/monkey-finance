@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Wallet, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 /** Traduz os erros de OAuth que aparecem na prática ao configurar o provedor. */
@@ -86,8 +86,12 @@ export default function Login() {
           transition={{ delay: 0.1 }}
           className='text-center mb-8'
         >
-          <div className='w-16 h-16 bg-monkey-primary rounded-2xl flex items-center justify-center mx-auto mb-4'>
-            <Wallet className='w-8 h-8 text-monkey-bg' />
+          <div className='w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-4'>
+            <img
+              src={`${import.meta.env.BASE_URL}icons/icon-192.png`}
+              alt='Monkey Finance'
+              className='h-full w-full object-cover'
+            />
           </div>
           <h1 className='text-3xl font-bold text-monkey-text'>
             Monkey Finance
