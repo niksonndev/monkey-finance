@@ -49,7 +49,7 @@ export default function DashboardCards({ stats }) {
         return (
           <div
             key={card.value}
-            className={`card flex items-center gap-3 p-3 sm:p-4 ${
+            className={`flex items-center gap-3 rounded-xl border border-monkey-muted/25 bg-monkey-card p-3 sm:p-4 ${
               destaque ? 'col-span-2 sm:col-span-1' : ''
             }`}
           >

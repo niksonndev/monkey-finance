@@ -109,7 +109,7 @@ export default function Dashboard() {
   const goToCurrentMonth = () => setCurrentMonth(new Date());
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-5 sm:space-y-6'>
       <div className='flex flex-col gap-4'>
         <div>
           <h1 className='text-2xl font-bold text-monkey-text'>Dashboard</h1>
@@ -137,7 +137,6 @@ export default function Dashboard() {
       </div>
 
       <DashboardCards stats={stats} />
-
       {/* Layout principal: flexbox responsivo */}
       <div className='flex flex-col lg:flex-row gap-6'>
         {/* Coluna esquerda: Lista de transações (ocupa espaço restante) */}

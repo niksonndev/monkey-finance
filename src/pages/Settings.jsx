@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   User,
   Lock,
@@ -195,26 +194,17 @@ export default function Settings() {
   };
 
   return (
-    <div className='space-y-6'>
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'
-      >
-        <div>
-          <h1 className='text-2xl font-bold text-monkey-text'>Configurações</h1>
-          <p className='text-monkey-muted text-sm'>
-            Gerencie sua conta e preferências
-          </p>
-        </div>
-      </motion.div>
+    <div className='space-y-5 sm:space-y-6'>
+      <div>
+        <h1 className='text-2xl font-bold text-monkey-text'>Configurações</h1>
+        <p className='text-monkey-muted text-sm'>
+          Gerencie sua conta e preferências
+        </p>
+      </div>
 
       {message.text && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className={`p-4 rounded-lg flex items-center gap-3 ${
+        <div
+          className={`flex items-center gap-3 rounded-lg p-4 ${
             message.type === 'success'
               ? 'bg-monkey-success/10 border border-monkey-success/20 text-monkey-success'
               : 'bg-monkey-danger/10 border border-monkey-danger/20 text-monkey-danger'
@@ -226,7 +216,7 @@ export default function Settings() {
             <AlertCircle className='w-5 h-5 flex-shrink-0' />
           )}
           <span className='text-sm'>{message.text}</span>
-        </motion.div>
+        </div>
       )}
 
       <div className='card'>
@@ -236,11 +226,10 @@ export default function Settings() {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
-                <motion.button
+                <button
                   key={tab.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                   onClick={() => setActiveTab(tab.id)}
+                  aria-pressed={isActive}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0 ${
                     isActive
                       ? 'bg-monkey-primary/20 text-monkey-primary'
@@ -249,17 +238,15 @@ export default function Settings() {
                 >
                   <Icon className='w-4 h-4' />
                   {tab.label}
-                </motion.button>
+                </button>
               );
             })}
           </nav>
         </div>
 
-        <div className='p-6'>
+        <div className='pt-5'>
           {activeTab === 'profile' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div
               className='space-y-6 max-w-md'
             >
               <div className='flex items-center gap-4'>
@@ -318,9 +305,7 @@ export default function Settings() {
                   </p>
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   type='submit'
                   disabled={loading}
                   className='w-full btn-primary py-3 flex items-center justify-center gap-2'
@@ -336,15 +321,13 @@ export default function Settings() {
                       Salvar alterações
                     </>
                   )}
-                </motion.button>
+                </button>
               </form>
-            </motion.div>
+            </div>
           )}
 
           {activeTab === 'currency' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div
               className='space-y-6 max-w-md'
             >
               <div>
@@ -403,13 +386,11 @@ export default function Settings() {
                   {currencyInfo('EUR').symbol} 50,00 depois.
                 </p>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {activeTab === 'security' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div
               className='space-y-6 max-w-md'
             >
               <div>
@@ -435,13 +416,11 @@ export default function Settings() {
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {activeTab === 'recurring' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div
               className='space-y-4 max-w-2xl'
             >
               <div>
@@ -559,13 +538,11 @@ export default function Settings() {
                     </div>
                   </div>
                 ))}
-            </motion.div>
+            </div>
           )}
 
           {activeTab === 'notifications' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div
               className='space-y-6 max-w-md'
             >
               <div>
@@ -626,13 +603,11 @@ export default function Settings() {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           )}
 
           {activeTab === 'danger' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div
               className='space-y-6 max-w-md'
             >
               <div className='p-4 bg-monkey-danger/10 border border-monkey-danger/20 rounded-lg'>
@@ -661,9 +636,7 @@ export default function Settings() {
                   categorias, preferências) serão permanentemente removidos e
                   não poderão ser recuperados.
                 </p>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={handleDeleteAccount}
                   disabled={loading}
                   className='w-full py-3 px-4 rounded-lg bg-monkey-danger/10 border border-monkey-danger/30 text-monkey-danger font-medium hover:bg-monkey-danger/20 transition-colors flex items-center justify-center gap-2'
@@ -679,7 +652,7 @@ export default function Settings() {
                       Excluir minha conta permanentemente
                     </>
                   )}
-                </motion.button>
+                </button>
               </div>
 
               <div className='border-t border-monkey-muted/30 pt-6'>
@@ -690,9 +663,7 @@ export default function Settings() {
                   Encerre sua sessão atual. Você precisará fazer login novamente
                   para acessar sua conta.
                 </p>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={handleSignOut}
                   disabled={loading}
                   className='w-full py-3 px-4 rounded-lg bg-monkey-card border border-monkey-muted/30 text-monkey-text font-medium hover:bg-monkey-muted/10 transition-colors flex items-center justify-center gap-2'
@@ -708,9 +679,9 @@ export default function Settings() {
                       Sair da conta
                     </>
                   )}
-                </motion.button>
+                </button>
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
       </div>

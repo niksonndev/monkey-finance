@@ -190,7 +190,7 @@ export default function TransactionModal({
             className='relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-monkey-muted/30 bg-monkey-card sm:mx-4 sm:max-w-md sm:rounded-2xl'
             onClick={(e) => e.stopPropagation()}
           >
-            <div className='flex items-center justify-between border-b border-monkey-muted/30 px-4 py-3'>
+            <div className='flex items-center justify-between border-b border-monkey-muted/30 px-4 py-3.5 sm:px-5'>
               <h2 className='text-lg font-bold text-monkey-text'>
                 {transaction ? 'Editar transação' : 'Nova transação'}
               </h2>
@@ -206,7 +206,7 @@ export default function TransactionModal({
 
             <form
               onSubmit={handleSubmit}
-              className='flex-1 space-y-4 overflow-y-auto px-4 py-4'
+              className='flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-5'
             >
               {errors.submit && (
                 <p className='rounded-lg bg-monkey-danger/10 p-2.5 text-sm text-monkey-danger'>
@@ -484,7 +484,7 @@ export default function TransactionModal({
             </form>
 
             {/* Rodapé fixo: os botões não rolam junto com o formulário. */}
-            <div className='flex gap-2 border-t border-monkey-muted/30 bg-monkey-card px-4 py-3'>
+            <div className='flex gap-2 border-t border-monkey-muted/30 bg-monkey-card px-4 py-3.5 sm:px-5'>
               <button
                 type='button'
                 onClick={onClose}
