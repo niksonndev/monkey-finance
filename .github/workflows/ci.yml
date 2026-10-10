@@ -16,7 +16,9 @@ concurrency:
 jobs:
   qualidade:
     name: Lint, testes, build e PWA
-    runs-on: ubuntu-latest
+    # ubuntu-24.04 fixo: o rótulo ubuntu-latest vai migrar para o Ubuntu 26
+    # em 19/10/2026, o que quebraria o runner do CI sem aviso.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -72,7 +74,8 @@ jobs:
     name: Publicar no GitHub Pages
     needs: qualidade
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
+    # ubuntu-24.04 fixo, mesmo motivo do job de qualidade.
+    runs-on: ubuntu-24.04
     permissions:
       pages: write
       id-token: write
