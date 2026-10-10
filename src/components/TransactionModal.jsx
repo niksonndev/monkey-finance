@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { addMonths, addWeeks, format } from 'date-fns';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
@@ -21,7 +21,9 @@ export default function TransactionModal({
   // gravado com a moeda ativa e a troca de unidade vale para toda a interface.
   const { currency } = useCurrency();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [errors, setErrors] = useState({});
+
+  const formVazio = {
     type: 'expense',
     amount: '',
     category: '',
@@ -29,14 +31,17 @@ export default function TransactionModal({
     date: new Date().toISOString().split('T')[0],
     is_recurring: false,
     recurring_frequency: 'monthly',
-  });
-  const [errors, setErrors] = useState({});
-  const [categories, setCategories] = useState([]);
+  };
 
-  useEffect(() => {
-    if (isOpen) {
-      if (transaction) {
-        setFormData({
+  /**
+   * `key` no modal (ver quem renderiza) remonta este componente a cada
+   * transação, então o formulário nasce já preenchido: edição carrega os dados
+   * da transação, e um lançamento novo parte do padrão. Assim não existe
+   * `useEffect` para copiar props em estado (que renderizaria duas vezes).
+   */
+  const [formData, setFormData] = useState(() =>
+    transaction
+      ? {
           type: transaction.type,
           amount: transaction.amount,
           category: transaction.category,
@@ -46,31 +51,17 @@ export default function TransactionModal({
             new Date().toISOString().split('T')[0],
           is_recurring: transaction.is_recurring || false,
           recurring_frequency: transaction.recurring_frequency || 'monthly',
-        });
-      } else {
-        setFormData({
-          type: 'expense',
-          amount: '',
-          category: '',
-          description: '',
-          date: new Date().toISOString().split('T')[0],
-          is_recurring: false,
-          recurring_frequency: 'monthly',
-        });
-      }
-      setErrors({});
-    }
-  }, [isOpen, transaction]);
+        }
+      : formVazio,
+  );
 
-  useEffect(() => {
-    setCategories(CATEGORIES[formData.type] || []);
-    if (!CATEGORIES[formData.type]?.includes(formData.category)) {
-      setFormData((prev) => ({
-        ...prev,
-        category: CATEGORIES[formData.type]?.[0] || '',
-      }));
-    }
-  }, [formData.type]);
+  // Categorias dependem do tipo selecionado, não da transação: saem direto do
+  // formData (se o tipo ainda não tem categoria escolhida, a primeira da lista
+  // entra no estado antes da tela pintar).
+  const categorias = CATEGORIES[formData.type] || [];
+  if (!categorias.includes(formData.category) && categorias[0]) {
+    setFormData((prev) => ({ ...prev, category: categorias[0] }));
+  }
 
   const validateForm = () => {
     const newErrors = {};
@@ -294,7 +285,7 @@ export default function TransactionModal({
                   className={`input-field ${errors.category ? 'border-monkey-danger' : ''}`}
                 >
                   <option value=''>Selecione uma categoria</option>
-                  {categories.map((cat) => (
+                  {categorias.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>

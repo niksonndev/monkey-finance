@@ -212,7 +212,10 @@ export default function Transactions() {
         </motion.div>
       </div>
 
+      {/* `key` força a remontagem a cada transação: o formulário do modal
+          nasce já preenchido (ou vazio), em vez de copiar props num efeito. */}
       <TransactionModal
+        key={editingTransaction?.id ?? 'nova'}
         isOpen={showModal}
         onClose={handleCloseModal}
         onSuccess={handleSuccess}
