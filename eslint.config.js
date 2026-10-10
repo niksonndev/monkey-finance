@@ -26,9 +26,11 @@ export default [
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': 'warn',
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      // Padrões legados do projeto (inicialização de formulário no modal,
-      // carregamento de preferências salvas) disparam esta regra nova.
-      // Tratada como warning até o refactor para useState inicializador/key.
+      // O app é uma SPA sem SSR: a sessão, a moeda e as preferências moram no
+      // localStorage, que só existe depois da montagem. O caminho sem efeito é
+      // o `key` no componente (ver TransactionModal) e o `useState` com
+      // inicializador; onde isso não basta (a sessão chega assíncrona), o
+      // efeito é a forma correta e fica como aviso, não erro.
       'react-hooks/set-state-in-effect': 'warn',
     },
   },

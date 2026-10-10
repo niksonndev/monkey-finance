@@ -29,6 +29,9 @@ export function useTransactions() {
     }
   }, [user]);
 
+  // A busca depende de dados do servidor, e não há valor inicial possível: o
+  // efeito é a forma correta de sincronizar estado externo com o React (é
+  // justamente o caso que a regra set-state-in-effect permite).
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
