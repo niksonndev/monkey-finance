@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
-import { motion } from 'framer-motion';
 import {
   CATEGORY_COLORS,
   DEFAULT_CHART_COLORS,
@@ -90,12 +89,7 @@ export default function PieChart({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5 }}
-      className='card'
-    >
+    <div className='card'>
       {/* O título aparece mesmo sem dados: sem ele, dois cards vazios no
           dashboard ficariam indistinguíveis. */}
       {title && (
@@ -148,6 +142,6 @@ export default function PieChart({
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

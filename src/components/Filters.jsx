@@ -23,9 +23,14 @@ import { currencyInfo } from '../constants/currencies';
  * resto fica em segmentos compactos + um grupo "mais" que abre valor e
  * ordenação. Cada filtro ativo aparece como chip removível, então dá para
  * desfazer um só sem sair limpando tudo.
+ *
+ * Sem `layoutId` no destaque das pílulas: a animação compartilhada desmonta o
+ * destaque de um botão e remonta no outro a cada clique, o que aparecia como
+ * um piscar (glitch) junto da troca de estado. A cor de fundo mudando já
+ * comunica a seleção.
  */
 
-/** Segmento de opções (tipo/categoria/ordenação): pílulas que deslizam. */
+/** Segmento de opções (tipo): pílulas que marcam a ativa. */
 function Segmented({ value, options, onChange, ariaLabel }) {
   return (
     <div
@@ -41,20 +46,13 @@ function Segmented({ value, options, onChange, ariaLabel }) {
             type='button'
             onClick={() => onChange(opt.value)}
             aria-pressed={ativo}
-            className={`relative flex-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+            className={`flex-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
               ativo
-                ? 'text-monkey-bg'
+                ? 'bg-monkey-primary text-monkey-bg'
                 : 'text-monkey-muted hover:text-monkey-text'
             }`}
           >
-            {ativo && (
-              <motion.span
-                layoutId={`seg-${ariaLabel}`}
-                className='absolute inset-0 rounded-md bg-monkey-primary'
-                transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-              />
-            )}
-            <span className='relative z-10'>{opt.label}</span>
+            {opt.label}
           </button>
         );
       })}

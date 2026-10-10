@@ -1,5 +1,4 @@
 import { Wallet, TrendingUp, TrendingDown } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useCurrency } from '../context/CurrencyContext';
 
 const cards = [
@@ -43,16 +42,13 @@ export default function DashboardCards({ stats }) {
 
   return (
     <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4'>
-      {cards.map((card, index) => {
+      {cards.map((card) => {
         const destaque = card.value === 'balance';
         const negativo = card.value === 'balance' && stats.balance < 0;
 
         return (
-          <motion.div
+          <div
             key={card.value}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
             className={`card flex items-center gap-3 p-3 sm:p-4 ${
               destaque ? 'col-span-2 sm:col-span-1' : ''
             }`}
@@ -62,7 +58,9 @@ export default function DashboardCards({ stats }) {
             </div>
 
             <div className='min-w-0'>
-              <p className='truncate text-xs text-monkey-muted'>{card.title}</p>
+              <p className='truncate text-xs text-monkey-muted'>
+                {card.title}
+              </p>
               <p
                 className={`truncate text-base font-bold tabular-nums sm:text-lg ${
                   negativo ? 'text-monkey-danger' : 'text-monkey-text'
@@ -71,7 +69,7 @@ export default function DashboardCards({ stats }) {
                 {`${card.prefix}${formatValue(stats[card.value])}`}
               </p>
             </div>
-          </motion.div>
+          </div>
         );
       })}
     </div>

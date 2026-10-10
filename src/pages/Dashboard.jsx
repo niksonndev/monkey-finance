@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import {
   format,
@@ -57,6 +56,9 @@ export default function Dashboard() {
     [monthlyTransactions, filters],
   );
 
+  // Cards e gráficos usam o mês inteiro, não o resultado do filtro: filtrar a
+  // lista não deve mexer no saldo do mês nem no tamanho dos gráficos (o que
+  // antes deslocava a página quando um filtro era aplicado).
   const stats = useMemo(() => {
     const summary = getSummary(monthlyTransactions);
     const incomeCategories = getCategorySummary('income', monthlyTransactions);
@@ -108,20 +110,13 @@ export default function Dashboard() {
 
   return (
     <div className='space-y-6'>
-      {/* Header com navegação de mês */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className='flex flex-col gap-4'
-      >
-        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
-          <div>
-            <h1 className='text-2xl font-bold text-monkey-text'>Dashboard</h1>
-            <p className='text-monkey-muted text-sm'>
-              Visão geral do mês de{' '}
-              {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
-            </p>
-          </div>
+      <div className='flex flex-col gap-4'>
+        <div>
+          <h1 className='text-2xl font-bold text-monkey-text'>Dashboard</h1>
+          <p className='text-monkey-muted text-sm'>
+            Visão geral do mês de{' '}
+            {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
+          </p>
         </div>
 
         <MonthNavigator
@@ -129,38 +124,24 @@ export default function Dashboard() {
           onNext={nextMonth}
           onCurrent={goToCurrentMonth}
           actions={
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={() => handleOpenModal()}
-              className='btn-primary flex items-center gap-2 ml-auto'
+              className='btn-primary ml-auto flex items-center gap-2'
             >
               <Plus className='w-4 h-4' />
               <span className='hidden sm:inline'>Nova transação</span>
               <span className='sm:hidden'>Nova</span>
-            </motion.button>
+            </button>
           }
         />
-      </motion.div>
+      </div>
 
-      {/* DashboardCards - horizontal no desktop, vertical no mobile */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <DashboardCards stats={stats} />
-      </motion.div>
+      <DashboardCards stats={stats} />
 
       {/* Layout principal: flexbox responsivo */}
       <div className='flex flex-col lg:flex-row gap-6'>
         {/* Coluna esquerda: Lista de transações (ocupa espaço restante) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className='flex-1 min-w-0 lg:pr-0'
-        >
+        <div className='flex-1 min-w-0 lg:pr-0'>
           <div className='card'>
             <div className='flex items-center justify-between mb-4'>
               <h2 className='text-lg font-semibold text-monkey-text'>
@@ -178,15 +159,10 @@ export default function Dashboard() {
               loading={loading}
             />
           </div>
-        </motion.div>
+        </div>
 
-        {/* Coluna direita: Sidebar fixa 320px (w-80) com filtros e gráficos */}
-        <motion.aside
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className='w-full lg:w-80 flex-shrink-0 flex flex-col gap-6'
-        >
+        {/* Coluna direita: filtros e gráficos */}
+        <aside className='w-full lg:w-80 flex-shrink-0 flex flex-col gap-6'>
           <Filters
             filters={filters}
             onFiltersChange={setFilters}
@@ -217,7 +193,7 @@ export default function Dashboard() {
             title='Receitas por categoria'
             emptyMessage='Nenhuma receita neste mês'
           />
-        </motion.aside>
+        </aside>
       </div>
 
       {/* `key` força a remontagem a cada transação: o formulário do modal

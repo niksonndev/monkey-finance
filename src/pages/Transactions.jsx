@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { Plus, Download } from 'lucide-react';
 import {
   format,
@@ -118,11 +117,7 @@ export default function Transactions() {
 
   return (
     <div className='space-y-6'>
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'
-      >
+      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>
           <h1 className='text-2xl font-bold text-monkey-text'>Transações</h1>
           <p className='text-monkey-muted text-sm'>
@@ -136,36 +131,27 @@ export default function Transactions() {
           onCurrent={goToCurrentMonth}
           actions={
             <>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={exportToCSV}
                 className='btn-secondary flex items-center gap-2'
               >
                 <Download className='w-4 h-4' />
                 Exportar CSV
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              </button>
+              <button
                 onClick={() => handleOpenModal()}
                 className='btn-primary flex items-center gap-2'
               >
                 <Plus className='w-4 h-4' />
                 Nova transação
-              </motion.button>
+              </button>
             </>
           }
         />
-      </motion.div>
+      </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className='lg:col-span-2 space-y-6'
-        >
+        <div className='lg:col-span-2'>
           <div className='card'>
             <div className='flex items-center justify-between mb-4'>
               <h2 className='text-lg font-semibold text-monkey-text'>
@@ -183,14 +169,9 @@ export default function Transactions() {
               loading={loading}
             />
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className='space-y-6'
-        >
+        <div>
           <Filters
             filters={filters}
             onFiltersChange={setFilters}
@@ -209,7 +190,7 @@ export default function Transactions() {
             transactions={monthlyTransactions}
             loading={loading}
           />
-        </motion.div>
+        </div>
       </div>
 
       {/* `key` força a remontagem a cada transação: o formulário do modal

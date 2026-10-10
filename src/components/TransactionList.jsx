@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Edit, CreditCard, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCurrency } from '../context/CurrencyContext';
 import {
   agruparPorDia,
@@ -34,13 +34,21 @@ export default function TransactionList({
   const [deletingId, setDeletingId] = useState(null);
   const { formatValue } = useCurrency();
 
-  // Índice de cada lançamento na lista plana, usado para escalonar a animação
-  // de entrada sem mutar um contador durante o render (react-hooks/immutability).
-  const indicePorId = useMemo(() => {
-    const indice = new Map();
-    (transactions ?? []).forEach((t, i) => indice.set(t.id, i));
-    return indice;
-  }, [transactions]);
+  /**
+   * A entrada animada (fade + deslize) vale para a primeira vez que a lista
+   * aparece. Em filtro, reanimar TODAS as linhas era o que causava a sensação
+   * de "glitch": a cada tecla na busca ou troca de pílula, as linhas sumiam e
+   * reapareciam em ondas, e a altura da página mexia sozinha, jogando o scroll
+   * para cima ou para baixo. Fora da primeira montagem, quem movimenta as
+   * linhas é o `layout` (deslizamento suave), não uma reentrada.
+   */
+  const [jaApareceu, setJaApareceu] = useState(false);
+  const animarEntrada = !jaApareceu;
+  // Efeito só para marcar que a primeira passada aconteceu: a partir daí as
+  // linhas deixam de reanimar em bloco (o `layout` cuida do reposicionamento).
+  useEffect(() => {
+    if (!jaApareceu) setJaApareceu(true);
+  }, [jaApareceu]);
 
   // Confirmação fica a cargo da página (onDelete); aqui apenas
   // mostramos o spinner enquanto a exclusão está em andamento.
@@ -100,7 +108,13 @@ export default function TransactionList({
         const saldo = saldoDoDia(grupo.itens);
 
         return (
-          <section key={grupo.dia}>
+          <motion.section
+            key={grupo.dia}
+            layout='position'
+            initial={animarEntrada ? { opacity: 0, y: 8 } : false}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18 }}
+          >
             <div className='flex items-baseline justify-between gap-3 px-1 mb-1'>
               <h3 className='text-xs font-semibold uppercase tracking-wide text-monkey-muted'>
                 {rotuloDoDia(grupo.dia)}
@@ -116,87 +130,86 @@ export default function TransactionList({
             </div>
 
             <div className='divide-y divide-monkey-muted/10'>
-              {grupo.itens.map((transaction) => {
-                const receita = transaction.type === 'income';
-                const horario = transaction.created_at
-                  ? `Criado em ${format(new Date(transaction.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}`
-                  : undefined;
+              <AnimatePresence initial={false}>
+                {grupo.itens.map((transaction) => {
+                  const receita = transaction.type === 'income';
+                  const horario = transaction.created_at
+                    ? `Criado em ${format(new Date(transaction.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}`
+                    : undefined;
 
-                return (
-                  <motion.div
-                    key={transaction.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      delay: Math.min(
-                        (indicePorId.get(transaction.id) ?? 0) * 0.02,
-                        0.15,
-                      ),
-                    }}
-                    title={horario}
-                    className='flex items-center gap-3 py-3'
-                  >
-                    <span
-                      className={`w-1 self-stretch rounded-full flex-shrink-0 ${
-                        TYPE_BAR[transaction.type]
-                      }`}
-                    />
-
-                    <div className='flex-1 min-w-0'>
-                      <span className='block font-medium text-monkey-text text-sm line-clamp-2 break-words'>
-                        {transaction.description ||
-                          transaction.category ||
-                          'Sem categoria'}
-                      </span>
-                      <div className='mt-0.5 flex items-center gap-1.5'>
-                        {transaction.description && (
-                          <span className='text-xs text-monkey-muted truncate'>
-                            {transaction.category || 'Sem categoria'}
-                          </span>
-                        )}
-                        <span className='text-[11px] leading-4 px-2 rounded bg-monkey-muted/15 text-monkey-muted flex-shrink-0'>
-                          {TYPE_LABELS[transaction.type]}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className='flex flex-col items-end flex-shrink-0'>
+                  return (
+                    <motion.div
+                      key={transaction.id}
+                      layout='position'
+                      initial={animarEntrada ? { opacity: 0, y: 8 } : false}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.18 }}
+                      title={horario}
+                      className='flex items-center gap-3 py-3'
+                    >
                       <span
-                        className={`text-sm font-bold tabular-nums ${TYPE_TEXT[transaction.type]}`}
-                      >
-                        {receita ? '+' : '-'}
-                        {formatValue(transaction.amount)}
-                      </span>
+                        className={`w-1 self-stretch rounded-full flex-shrink-0 ${
+                          TYPE_BAR[transaction.type]
+                        }`}
+                      />
 
-                      <div className='flex items-center -mr-1.5'>
-                        <motion.button
-                          whileTap={{ scale: 0.85 }}
-                          onClick={() => onEdit(transaction)}
-                          className='p-1.5 rounded-md text-monkey-muted hover:bg-monkey-muted/10 hover:text-monkey-text transition-colors'
-                          aria-label='Editar transação'
-                        >
-                          <Edit className='w-3.5 h-3.5' />
-                        </motion.button>
-                        <motion.button
-                          whileTap={{ scale: 0.85 }}
-                          onClick={() => handleDeleteClick(transaction.id)}
-                          disabled={deletingId === transaction.id}
-                          className='p-1.5 rounded-md text-monkey-muted hover:bg-monkey-danger/10 hover:text-monkey-danger transition-colors'
-                          aria-label='Excluir transação'
-                        >
-                          {deletingId === transaction.id ? (
-                            <Loader2 className='w-3.5 h-3.5 animate-spin' />
-                          ) : (
-                            <Trash2 className='w-3.5 h-3.5' />
+                      <div className='flex-1 min-w-0'>
+                        <span className='block font-medium text-monkey-text text-sm line-clamp-2 break-words'>
+                          {transaction.description ||
+                            transaction.category ||
+                            'Sem categoria'}
+                        </span>
+                        <div className='mt-0.5 flex items-center gap-1.5'>
+                          {transaction.description && (
+                            <span className='text-xs text-monkey-muted truncate'>
+                              {transaction.category || 'Sem categoria'}
+                            </span>
                           )}
-                        </motion.button>
+                          <span className='text-[11px] leading-4 px-2 rounded bg-monkey-muted/15 text-monkey-muted flex-shrink-0'>
+                            {TYPE_LABELS[transaction.type]}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+
+                      <div className='flex flex-col items-end flex-shrink-0'>
+                        <span
+                          className={`text-sm font-bold tabular-nums ${
+                            TYPE_TEXT[transaction.type]
+                          }`}
+                        >
+                          {receita ? '+' : '-'}
+                          {formatValue(transaction.amount)}
+                        </span>
+
+                        <div className='flex items-center -mr-1.5'>
+                          <button
+                            onClick={() => onEdit(transaction)}
+                            className='p-1.5 rounded-md text-monkey-muted hover:bg-monkey-muted/10 hover:text-monkey-text transition-colors'
+                            aria-label='Editar transação'
+                          >
+                            <Edit className='w-3.5 h-3.5' />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(transaction.id)}
+                            disabled={deletingId === transaction.id}
+                            className='p-1.5 rounded-md text-monkey-muted hover:bg-monkey-danger/10 hover:text-monkey-danger transition-colors'
+                            aria-label='Excluir transação'
+                          >
+                            {deletingId === transaction.id ? (
+                              <Loader2 className='w-3.5 h-3.5 animate-spin' />
+                            ) : (
+                              <Trash2 className='w-3.5 h-3.5' />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             </div>
-          </section>
+          </motion.section>
         );
       })}
     </div>
