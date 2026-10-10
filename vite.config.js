@@ -107,6 +107,25 @@ function pwaBuild() {
 export default defineConfig({
   base: BASE,
   plugins: [react(), pwaBuild()],
+  build: {
+    rollupOptions: {
+      output: {
+        /**
+         * Separa as bibliotecas grandes em pedaços próprios.
+         *
+         * Sem isso, tudo que é dependência entra no chunk do app e é
+         * reenviado ao celular a cada mudança de código. Separado, o
+         * navegador guarda React/Supabase/Chart.js em cache e só baixa de
+         * novo quando a dependência realmente muda.
+         */
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          supabase: ['@supabase/supabase-js'],
+          charts: ['chart.js', 'react-chartjs-2'],
+        },
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,

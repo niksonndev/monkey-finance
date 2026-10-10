@@ -116,21 +116,28 @@ export function useTransactions() {
 
   // useCallback: mantém a identidade estável entre renders, senão os useMemo
   // das páginas (que dependem destas funções) recalculam a cada render.
-  const getSummary = useCallback((txs = transactions) => {
-    const income = txs
-      .filter((t) => t.type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
+  const getSummary = useCallback(
+    (txs = transactions) => {
+      let income = 0;
+      let expenses = 0;
 
-    const expenses = txs
-      .filter((t) => t.type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
+      // Laço único em vez de dois filter+reduce: soma receitas e despesas na
+      // mesma passada (esta função é chamada a cada render do dashboard e da
+      // tela de transações, com toda a lista do mês).
+      for (const t of txs) {
+        const valor = Number(t.amount);
+        if (t.type === 'income') income += valor;
+        else if (t.type === 'expense') expenses += valor;
+      }
 
-    return {
-      income,
-      expenses,
-      balance: income - expenses,
-    };
-  }, [transactions]);
+      return {
+        income,
+        expenses,
+        balance: income - expenses,
+      };
+    },
+    [transactions],
+  );
 
   const getCategorySummary = useCallback((type, txs = transactions) => {
     return txs
