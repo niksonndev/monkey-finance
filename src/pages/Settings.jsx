@@ -19,6 +19,7 @@ import { currencyInfo } from '../constants/currencies';
 import { supabase } from '../lib/supabaseClient';
 import { useRecurring } from '../hooks/useRecurring';
 import { formatDate } from '../utils/formatters';
+import Avatar from '../components/Avatar';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -250,10 +251,8 @@ export default function Settings() {
               className='space-y-6 max-w-md'
             >
               <div className='flex items-center gap-4'>
-                <div className='w-20 h-20 bg-monkey-primary/20 rounded-2xl flex items-center justify-center'>
-                  <User className='w-10 h-10 text-monkey-primary' />
-                </div>
-                <div>
+                <Avatar user={user} className='h-20 w-20 text-2xl' />
+                <div className='min-w-0'>
                   <h3 className='text-lg font-semibold text-monkey-text'>
                     {profileData.fullName ||
                       user?.email?.split('@')[0] ||

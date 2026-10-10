@@ -1,5 +1,6 @@
 import { Menu, Wallet } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Avatar from './Avatar';
 
 /**
  * Barra superior do celular (fixa). Só aparece abaixo de lg: no desktop o
@@ -20,12 +21,8 @@ export default function MobileNav({ onMenuClick }) {
           </span>
         </div>
 
-        <div className='flex items-center gap-2'>
-          {user && (
-            <span className='hidden max-w-[120px] truncate text-xs text-monkey-muted sm:block'>
-              {user.email}
-            </span>
-          )}
+        <div className='flex items-center gap-3'>
+          {user && <Avatar user={user} className='h-8 w-8 text-sm' />}
           <button
             onClick={onMenuClick}
             className='rounded-lg p-2 text-monkey-text transition-colors hover:bg-monkey-muted/10'

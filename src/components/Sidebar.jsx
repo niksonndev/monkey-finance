@@ -7,6 +7,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Avatar from './Avatar';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -74,7 +75,8 @@ export default function Sidebar({ isOpen, onClose }) {
 
         <div className='border-t border-monkey-muted/30 p-3'>
           {user && (
-            <div className='mb-3 rounded-lg bg-monkey-muted/10 px-3 py-2'>
+            <div className='mb-3 flex items-center gap-2.5 rounded-lg bg-monkey-muted/10 px-3 py-2'>
+              <Avatar user={user} className='h-8 w-8 shrink-0 text-sm' />
               <p className='truncate text-xs text-monkey-muted'>
                 {user.email}
               </p>
@@ -133,7 +135,8 @@ export default function Sidebar({ isOpen, onClose }) {
 
         <div className='border-t border-monkey-muted/30 p-3'>
           {user && (
-            <div className='mb-3 rounded-lg bg-monkey-muted/10 px-3 py-2'>
+            <div className='mb-3 flex items-center gap-2.5 rounded-lg bg-monkey-muted/10 px-3 py-2'>
+              <Avatar user={user} className='h-8 w-8 shrink-0 text-sm' />
               <p className='truncate text-xs text-monkey-muted'>
                 {user.email}
               </p>

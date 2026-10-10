@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Download } from 'lucide-react';
+import { Plus, FileDown } from 'lucide-react';
 import {
   format,
   startOfMonth,
@@ -135,8 +135,8 @@ export default function Transactions() {
                 onClick={exportToCSV}
                 className='btn-secondary flex items-center gap-2'
               >
-                <Download className='w-4 h-4' />
-                Exportar CSV
+                <FileDown className='w-4 h-4' />
+                Exportar planilha
               </button>
               <button
                 onClick={() => handleOpenModal()}
