@@ -14,23 +14,14 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUser = useCallback(async () => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-    } catch (error) {
-      console.error('Erro ao buscar usuário:', error);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  /**
+   * O usuário não é buscado num efeito: `onAuthStateChange` dispara
+   * `INITIAL_SESSION` logo após a inscrição, com a sessão já recuperada do
+   * localStorage (ou `null`, quando não há sessão). É aí que o estado sai de
+   * "carregando" — um efeito só para `getUser()` renderizaria duas vezes e
+   * ainda correria o risco de a inscrição chegar antes da resposta.
+   */
   useEffect(() => {
-    fetchUser();
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -39,7 +30,19 @@ export function AuthProvider({ children }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchUser]);
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    } catch (error) {
+      console.error('Erro ao buscar usuário:', error);
+      setUser(null);
+    }
+  }, []);
 
   /**
    * Login exclusivamente via Google. O app é uma SPA estática sem backend, e o
@@ -92,7 +95,7 @@ export function AuthProvider({ children }) {
     loading,
     signInWithGoogle,
     signOut,
-    refreshUser: fetchUser,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

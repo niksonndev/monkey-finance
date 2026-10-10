@@ -9,7 +9,6 @@ import {
 import { useAuth } from './AuthContext';
 import {
   CURRENCIES,
-  DEFAULT_CURRENCY,
   getSavedCurrency,
   isCurrency,
   saveCurrency,
@@ -25,11 +24,27 @@ const CurrencyContext = createContext(null);
 
 export function CurrencyProvider({ children }) {
   const { user } = useAuth();
-  const [currency, setCurrencyState] = useState(DEFAULT_CURRENCY);
+  // A moeda é lida no primeiro render, a partir do usuário já conhecido, e
+  // trocada de estado quando o usuário muda (ver observação abaixo). Ler num
+  // efeito faria a tela nascer com BRL e só depois corrigir para a moeda salva.
+  const [currency, setCurrencyState] = useState(() =>
+    getSavedCurrency(user?.id),
+  );
 
-  // Carrega a moeda do usuário (trocar de conta troca a moeda exibida)
+  /**
+   * A lista do contexto de auth chega assíncrona (`loading` no AuthProvider),
+   * então na primeira renderização `user` ainda é `null` e o estado acima cai
+   * em BRL. Quando o usuário aparece, reidratamos com a moeda dele.
+   *
+   * A leitura está fora do setState (o valor só é computado se for diferente do
+   * que já está em tela), e a comparação de referência evita o laço infinito:
+   * o código da moeda é uma string, então ids iguais não re-renderizam.
+   */
   useEffect(() => {
-    setCurrencyState(getSavedCurrency(user?.id));
+    setCurrencyState((atual) => {
+      const salva = getSavedCurrency(user?.id);
+      return salva === atual ? atual : salva;
+    });
   }, [user?.id]);
 
   const setCurrency = useCallback(

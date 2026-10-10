@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, Wallet, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -45,20 +45,20 @@ function GoogleLogo() {
 
 export default function Login() {
   const { signInWithGoogle } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  // O Supabase devolve falhas de OAuth no hash da URL (ex.: e-mail já vinculado
-  // a outra conta). Mostra a mensagem e limpa o hash para não repetir no F5.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  // A mensagem de erro do OAuth vem no hash da URL, e é lida na PRIMEIRA
+  // renderização, não num efeito: assim não há segundo render, e o hash é
+  // limpo na hora (senão a mensagem voltaria no F5).
+  const [error, setError] = useState(() => {
+    const params = new URLSearchParams(
+      window.location.hash.replace(/^#/, ''),
+    );
     const descricao = params.get('error_description');
 
-    if (descricao) {
-      setError(mensagemDeErro({ message: descricao }));
-      window.history.replaceState(null, '', window.location.pathname);
-    }
-  }, []);
+    if (!descricao) return '';
+    window.history.replaceState(null, '', window.location.pathname);
+    return mensagemDeErro({ message: descricao });
+  });
+  const [loading, setLoading] = useState(false);
 
   const handleEntrar = async () => {
     setError('');

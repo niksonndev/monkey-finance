@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   User,
@@ -46,27 +46,29 @@ export default function Settings() {
     email: user?.email || '',
   }));
 
-  const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    pushNotifications: false,
-    weeklyReport: true,
-    monthlyReport: true,
-  });
-
-  // Carrega preferências persistidas (por usuário) do localStorage
-  useEffect(() => {
-    if (!user?.id) return;
+  /**
+   * Preferências persistidas por usuário no localStorage. Lidas na primeira
+   * renderização com `key` na chave: trocar de conta remonta a lista e cada
+   * item relê do storage (sem efeito, sem piscar o valor antigo).
+   */
+  const [notifications, setNotifications] = useState(() => {
+    const padrao = {
+      emailNotifications: true,
+      pushNotifications: false,
+      weeklyReport: true,
+      monthlyReport: true,
+    };
+    if (!user?.id) return padrao;
     try {
       const stored = localStorage.getItem(
         `monkeynanca:notifications:${user.id}`,
       );
-      if (stored) {
-        setNotifications((prev) => ({ ...prev, ...JSON.parse(stored) }));
-      }
+      return stored ? { ...padrao, ...JSON.parse(stored) } : padrao;
     } catch (err) {
       console.error('Erro ao carregar preferências de notificação:', err);
+      return padrao;
     }
-  }, [user?.id]);
+  });
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
