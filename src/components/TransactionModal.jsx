@@ -1,13 +1,20 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, Loader2 } from 'lucide-react';
+import { X, Save, Loader2, Repeat, CalendarDays, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import { addMonths, addWeeks, format } from 'date-fns';
+import { addDays, addMonths, addWeeks, format } from 'date-fns';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { CATEGORIES } from '../constants/categories';
 import { parseLocalDate } from '../utils/formatters';
 import { currencyInfo } from '../constants/currencies';
+
+/** Atalhos de data: hoje é o padrão, os outros poupam o seletor nativo. */
+const ATALHOS_DATA = [
+  { label: 'Hoje', dias: 0 },
+  { label: 'Ontem', dias: -1 },
+  { label: 'Anteontem', dias: -2 },
+];
 
 export default function TransactionModal({
   isOpen,
@@ -17,18 +24,19 @@ export default function TransactionModal({
   transaction = null,
 }) {
   const { user } = useAuth();
-  // A moeda é do app, não da transação (ver CurrencyContext): o lançamento é
-  // gravado com a moeda ativa e a troca de unidade vale para toda a interface.
+  // A moeda é do app (Configurações → Moeda), não desta tela: só o símbolo
+  // aparece dentro do campo de valor, para dar contexto ao número.
   const { currency } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
+  const hoje = new Date().toISOString().split('T')[0];
   const formVazio = {
     type: 'expense',
     amount: '',
     category: '',
     description: '',
-    date: new Date().toISOString().split('T')[0],
+    date: hoje,
     is_recurring: false,
     recurring_frequency: 'monthly',
   };
@@ -46,9 +54,7 @@ export default function TransactionModal({
           amount: transaction.amount,
           category: transaction.category,
           description: transaction.description || '',
-          date:
-            transaction.date?.split('T')[0] ||
-            new Date().toISOString().split('T')[0],
+          date: transaction.date?.split('T')[0] || hoje,
           is_recurring: transaction.is_recurring || false,
           recurring_frequency: transaction.recurring_frequency || 'monthly',
         }
@@ -63,10 +69,12 @@ export default function TransactionModal({
     setFormData((prev) => ({ ...prev, category: categorias[0] }));
   }
 
+  const ehReceita = formData.type === 'income';
+
   const validateForm = () => {
     const newErrors = {};
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      newErrors.amount = 'Valor deve ser maior que zero';
+      newErrors.amount = 'Informe um valor maior que zero';
     }
     if (!formData.category) {
       newErrors.category = 'Selecione uma categoria';
@@ -157,142 +165,153 @@ export default function TransactionModal({
     }
   };
 
+  const label =
+    'mb-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-monkey-muted';
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
-          {/* Overlay */}
+        <div className='fixed inset-0 z-50 flex items-end justify-center sm:items-center'>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className='absolute inset-0 bg-black/50'
+            className='absolute inset-0 bg-black/60 backdrop-blur-sm'
             onClick={onClose}
           />
 
-          {/* Modal Content - CENTRALIZADO */}
+          {/* No celular sobe como folha (mais fácil de alcançar com o dedo);
+              no desktop continua modal centralizado. */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className='fixed z-50 w-full max-w-md sm:max-w-lg mx-4 sm:mx-auto bg-monkey-card rounded-2xl border border-monkey-muted/30 overflow-hidden'
+            initial={{ opacity: 0, y: 40, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 40, scale: 0.98 }}
+            transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+            className='relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-monkey-muted/30 bg-monkey-card sm:mx-4 sm:max-w-md sm:rounded-2xl'
             onClick={(e) => e.stopPropagation()}
           >
-            <div className='flex items-center justify-between p-4 border-b border-monkey-muted/30'>
-              <h2 className='text-xl font-bold text-monkey-text'>
-                {transaction ? 'Editar Transação' : 'Nova Transação'}
+            <div className='flex items-center justify-between border-b border-monkey-muted/30 px-4 py-3'>
+              <h2 className='text-lg font-bold text-monkey-text'>
+                {transaction ? 'Editar transação' : 'Nova transação'}
               </h2>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              <button
+                type='button'
                 onClick={onClose}
-                className='p-1 rounded-lg text-monkey-muted hover:bg-monkey-muted/10 hover:text-monkey-text'
+                aria-label='Fechar'
+                className='rounded-lg p-1.5 text-monkey-muted transition-colors hover:bg-monkey-muted/10 hover:text-monkey-text'
               >
-                <X className='w-5 h-5' />
-              </motion.button>
+                <X className='h-5 w-5' />
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} className='p-4 space-y-4'>
+            <form
+              onSubmit={handleSubmit}
+              className='flex-1 space-y-4 overflow-y-auto px-4 py-4'
+            >
               {errors.submit && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className='text-sm text-monkey-danger bg-monkey-danger/10 p-2 rounded-lg'
-                >
+                <p className='rounded-lg bg-monkey-danger/10 p-2.5 text-sm text-monkey-danger'>
                   {errors.submit}
-                </motion.p>
+                </p>
               )}
 
-              {/* Tipo */}
+              {/* Tipo: pílulas com a cor do sentido (verde receita, vermelho
+                  despesa), que é a primeira decisão de quem lança. */}
               <div>
-                <label className='block text-sm font-medium text-monkey-text mb-2'>
-                  Tipo
-                </label>
-                <div className='flex gap-2'>
-                  {['income', 'expense'].map((type) => (
-                    <button
-                      key={type}
-                      type='button'
-                      onClick={() => setFormData((prev) => ({ ...prev, type }))}
-                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                        formData.type === type
-                          ? type === 'income'
-                            ? 'bg-monkey-success/20 text-monkey-success border border-monkey-success/30'
-                            : 'bg-monkey-danger/20 text-monkey-danger border border-monkey-danger/30'
-                          : 'bg-monkey-muted/10 text-monkey-muted hover:bg-monkey-muted/20'
-                      }`}
-                    >
-                      {type === 'income' ? 'Receita' : 'Despesa'}
-                    </button>
-                  ))}
+                <span className={label}>Tipo</span>
+                <div
+                  role='group'
+                  aria-label='Tipo da transação'
+                  className='flex gap-2'
+                >
+                  {['expense', 'income'].map((type) => {
+                    const ativo = formData.type === type;
+                    const receita = type === 'income';
+                    return (
+                      <button
+                        key={type}
+                        type='button'
+                        aria-pressed={ativo}
+                        onClick={() =>
+                          setFormData((prev) => ({ ...prev, type }))
+                        }
+                        className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition-colors ${
+                          ativo
+                            ? receita
+                              ? 'bg-monkey-success/20 text-monkey-success ring-1 ring-monkey-success/40'
+                              : 'bg-monkey-danger/20 text-monkey-danger ring-1 ring-monkey-danger/40'
+                            : 'bg-monkey-muted/10 text-monkey-muted hover:bg-monkey-muted/20'
+                        }`}
+                      >
+                        {receita ? 'Receita' : 'Despesa'}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Moeda + Valor: a moeda é global (Configurações → Moeda), então
-                  aqui só mostramos qual está ativa. */}
-              <div className='flex flex-col sm:flex-row gap-3'>
-                <div className='w-full sm:w-24'>
-                  <label className='block text-sm font-medium text-monkey-text mb-2'>
-                    Moeda
-                  </label>
-                  <div
-                    className='input-field flex items-center justify-center text-monkey-muted'
-                    title={`Moeda do app: ${currencyInfo(currency).label}. Mude em Configurações → Moeda.`}
+              {/* Valor: o campo maior do formulário, com o símbolo da moeda
+                  dentro (a moeda em si se troca em Configurações). */}
+              <div>
+                <label htmlFor='amount' className={label}>
+                  Valor
+                </label>
+                <div className='relative'>
+                  <span
+                    className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg font-semibold ${
+                      ehReceita ? 'text-monkey-success' : 'text-monkey-danger'
+                    }`}
                   >
+                    {ehReceita ? '+' : '−'}
                     {currencyInfo(currency).symbol}
-                  </div>
-                </div>
-                <div className='flex-1'>
-                  <label
-                    htmlFor='amount'
-                    className='block text-sm font-medium text-monkey-text mb-2'
-                  >
-                    Valor
-                  </label>
+                  </span>
                   <input
                     id='amount'
                     name='amount'
                     type='number'
+                    inputMode='decimal'
                     step='0.01'
                     min='0.01'
                     value={formData.amount}
                     onChange={handleChange}
-                    className={`input-field ${errors.amount ? 'border-monkey-danger' : ''}`}
                     placeholder='0,00'
+                    className={`input-field py-3 pl-20 text-lg font-semibold tabular-nums ${
+                      errors.amount ? 'border-monkey-danger' : ''
+                    }`}
                   />
-                  {errors.amount && (
-                    <p className='text-sm text-monkey-danger mt-1'>
-                      {errors.amount}
-                    </p>
-                  )}
                 </div>
+                {errors.amount && (
+                  <p className='mt-1 text-xs text-monkey-danger'>
+                    {errors.amount}
+                  </p>
+                )}
               </div>
 
               {/* Categoria */}
               <div>
-                <label
-                  htmlFor='category'
-                  className='block text-sm font-medium text-monkey-text mb-2'
-                >
+                <label htmlFor='category' className={label}>
                   Categoria
                 </label>
-                <select
-                  id='category'
-                  name='category'
-                  value={formData.category}
-                  onChange={handleChange}
-                  className={`input-field ${errors.category ? 'border-monkey-danger' : ''}`}
-                >
-                  <option value=''>Selecione uma categoria</option>
-                  {categorias.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+                <div className='relative'>
+                  <select
+                    id='category'
+                    name='category'
+                    value={formData.category}
+                    onChange={handleChange}
+                    className={`input-field appearance-none pr-9 ${
+                      errors.category ? 'border-monkey-danger' : ''
+                    }`}
+                  >
+                    <option value=''>Selecione uma categoria</option>
+                    {categorias.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className='pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-monkey-muted' />
+                </div>
                 {errors.category && (
-                  <p className='text-sm text-monkey-danger mt-1'>
+                  <p className='mt-1 text-xs text-monkey-danger'>
                     {errors.category}
                   </p>
                 )}
@@ -300,11 +319,8 @@ export default function TransactionModal({
 
               {/* Descrição */}
               <div>
-                <label
-                  htmlFor='description'
-                  className='block text-sm font-medium text-monkey-text mb-2'
-                >
-                  Descrição (opcional)
+                <label htmlFor='description' className={label}>
+                  Descrição <span className='normal-case'>(opcional)</span>
                 </label>
                 <input
                   id='description'
@@ -313,109 +329,194 @@ export default function TransactionModal({
                   value={formData.description}
                   onChange={handleChange}
                   className='input-field'
-                  placeholder='Ex: Salário de janeiro, Mercado...'
+                  placeholder='Ex: Mercado da esquina'
                 />
               </div>
 
-              {/* Data */}
+              {/* Data: atalhos para os casos comuns, seletor para o resto. */}
               <div>
-                <label
-                  htmlFor='date'
-                  className='block text-sm font-medium text-monkey-text mb-2'
-                >
+                <label htmlFor='date' className={label}>
+                  <CalendarDays className='h-3.5 w-3.5' />
                   Data
                 </label>
+                <div className='flex gap-1.5'>
+                  {ATALHOS_DATA.map((atalho) => {
+                    const valor = format(addDays(new Date(), atalho.dias), 'yyyy-MM-dd');
+                    const ativo = formData.date === valor;
+                    return (
+                      <button
+                        key={atalho.label}
+                        type='button'
+                        aria-pressed={ativo}
+                        onClick={() =>
+                          setFormData((prev) => ({ ...prev, date: valor }))
+                        }
+                        className={`flex-1 rounded-lg py-2 text-xs font-medium transition-colors ${
+                          ativo
+                            ? 'bg-monkey-primary/20 text-monkey-primary ring-1 ring-monkey-primary/40'
+                            : 'bg-monkey-muted/10 text-monkey-muted hover:bg-monkey-muted/20'
+                        }`}
+                      >
+                        {atalho.label}
+                      </button>
+                    );
+                  })}
+                </div>
                 <input
                   id='date'
                   name='date'
                   type='date'
                   value={formData.date}
                   onChange={handleChange}
-                  className={`input-field ${errors.date ? 'border-monkey-danger' : ''}`}
+                  className={`input-field mt-1.5 ${
+                    errors.date ? 'border-monkey-danger' : ''
+                  }`}
                 />
                 {errors.date && (
-                  <p className='text-sm text-monkey-danger mt-1'>
+                  <p className='mt-1 text-xs text-monkey-danger'>
                     {errors.date}
                   </p>
                 )}
               </div>
 
               {/* Recorrência: só se cria no cadastro. Ao editar, a transação
-                  não tem vínculo com a regra, então marcar aqui não criaria
+                  não tem vínculo com a regra, então marcarmos aqui não criaria
                   nada — em vez de um no-op silencioso, explicamos onde gerir. */}
               {transaction ? (
                 transaction.is_recurring && (
-                  <p className='text-xs text-monkey-muted bg-monkey-bg rounded-lg border border-monkey-muted/20 p-3'>
+                  <p className='rounded-xl border border-monkey-muted/20 bg-monkey-bg p-3 text-xs text-monkey-muted'>
                     Esta transação é recorrente. As repetições são lançadas ao
                     abrir o app e podem ser encerradas em Configurações →
                     Recorrências.
                   </p>
                 )
               ) : (
-                <div className='flex items-center gap-3 p-3 bg-monkey-bg rounded-lg border border-monkey-muted/20'>
-                  <input
-                    id='is_recurring'
-                    name='is_recurring'
-                    type='checkbox'
-                    checked={formData.is_recurring}
-                    onChange={handleChange}
-                    className='w-4 h-4 rounded border-monkey-muted bg-monkey-card text-monkey-primary focus:ring-monkey-primary'
-                  />
-                  <div className='flex-1'>
+                <div className='rounded-xl border border-monkey-muted/20 bg-monkey-bg p-3'>
+                  <div className='flex items-center gap-3'>
+                    <span className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-monkey-primary/15 text-monkey-primary'>
+                      <Repeat className='h-4 w-4' />
+                    </span>
                     <label
                       htmlFor='is_recurring'
-                      className='text-sm font-medium text-monkey-text cursor-pointer'
+                      className='flex-1 cursor-pointer'
                     >
-                      Transação recorrente
+                      <span className='block text-sm font-medium text-monkey-text'>
+                        Repetir automaticamente
+                      </span>
+                      <span className='block text-xs text-monkey-muted'>
+                        Cria os próximos lançamentos sozinho
+                      </span>
                     </label>
-                    <p className='text-xs text-monkey-muted'>
-                      Repetir automaticamente
-                    </p>
-                  </div>
-                  {formData.is_recurring && (
-                    <select
-                      name='recurring_frequency'
-                      value={formData.recurring_frequency}
-                      onChange={handleChange}
-                      className='input-field w-32 text-sm py-1'
+                    {/* Switch no lugar do checkbox: estado ligado/desligado
+                        fica óbvio de longe. */}
+                    <button
+                      type='button'
+                      id='is_recurring'
+                      role='switch'
+                      aria-checked={formData.is_recurring}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          is_recurring: !prev.is_recurring,
+                        }))
+                      }
+                      className={`relative h-6 w-11 flex-shrink-0 rounded-full transition-colors ${
+                        formData.is_recurring
+                          ? 'bg-monkey-primary'
+                          : 'bg-monkey-muted/30'
+                      }`}
                     >
-                      <option value='monthly'>Mensal</option>
-                      <option value='weekly'>Semanal</option>
-                    </select>
-                  )}
+                      <motion.span
+                        layout
+                        transition={{
+                          type: 'spring',
+                          damping: 26,
+                          stiffness: 340,
+                        }}
+                        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow ${
+                          formData.is_recurring ? 'right-0.5' : 'left-0.5'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <AnimatePresence initial={false}>
+                    {formData.is_recurring && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.18 }}
+                        className='overflow-hidden'
+                      >
+                        <div className='flex gap-1.5 pt-3'>
+                          {[
+                            { value: 'monthly', label: 'Todo mês' },
+                            { value: 'weekly', label: 'Toda semana' },
+                          ].map((freq) => (
+                            <button
+                              key={freq.value}
+                              type='button'
+                              aria-pressed={
+                                formData.recurring_frequency === freq.value
+                              }
+                              onClick={() =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  recurring_frequency: freq.value,
+                                }))
+                              }
+                              className={`flex-1 rounded-lg py-2 text-xs font-medium transition-colors ${
+                                formData.recurring_frequency === freq.value
+                                  ? 'bg-monkey-primary/20 text-monkey-primary ring-1 ring-monkey-primary/40'
+                                  : 'bg-monkey-muted/10 text-monkey-muted hover:bg-monkey-muted/20'
+                              }`}
+                            >
+                              {freq.label}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
-
-              {/* Botões */}
-              <div className='flex gap-3 pt-2'>
-                <button
-                  type='button'
-                  onClick={onClose}
-                  className='flex-1 btn-secondary'
-                >
-                  Cancelar
-                </button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type='submit'
-                  disabled={loading}
-                  className='flex-1 btn-primary flex items-center justify-center gap-2'
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className='w-4 h-4 animate-spin' />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className='w-4 h-4' />
-                      {transaction ? 'Atualizar' : 'Salvar'}
-                    </>
-                  )}
-                </motion.button>
-              </div>
             </form>
+
+            {/* Rodapé fixo: os botões não rolam junto com o formulário. */}
+            <div className='flex gap-2 border-t border-monkey-muted/30 bg-monkey-card px-4 py-3'>
+              <button
+                type='button'
+                onClick={onClose}
+                className='btn-secondary flex-1'
+              >
+                Cancelar
+              </button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                type='submit'
+                disabled={loading}
+                onClick={handleSubmit}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold text-monkey-bg transition-colors disabled:opacity-60 ${
+                  ehReceita
+                    ? 'bg-monkey-success hover:brightness-110'
+                    : 'bg-monkey-primary hover:brightness-110'
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className='h-4 w-4 animate-spin' />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className='h-4 w-4' />
+                    {transaction ? 'Atualizar' : 'Salvar'}
+                  </>
+                )}
+              </motion.button>
+            </div>
           </motion.div>
         </div>
       )}
