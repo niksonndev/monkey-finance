@@ -1,16 +1,12 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
   CreditCard,
   Settings,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   Wallet,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -18,10 +14,21 @@ const navItems = [
   { path: '/settings', label: 'Configurações', icon: Settings },
 ];
 
+/**
+ * Menu lateral.
+ *
+ * No desktop fica sempre à vista; no celular é uma gaveta que entra e sai.
+ * Quem decide o estado é o Layout (que fecha na troca de rota) — aqui só
+ * desenhamos a partir de `isOpen`.
+ *
+ * A gaveta do celular usa transição CSS curta (translate + transition), não
+ * mola: a mola do framer-motion tinha um estiramento inicial que parecia
+ * lento e depois rápido, sem fluidez. No desktop não há transição nenhuma
+ * (o menu já está no lugar).
+ */
 export default function Sidebar({ isOpen, onClose }) {
   const { user, signOut } = useAuth();
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -29,42 +36,81 @@ export default function Sidebar({ isOpen, onClose }) {
   };
 
   return (
-    <motion.aside
-      initial={{ x: -280 }}
-      animate={{ x: isOpen ? 0 : collapsed ? -80 : -280 }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className={`fixed top-0 left-0 z-50 h-screen bg-monkey-card border-r border-monkey-muted/30 transition-all duration-300 ${
-        collapsed ? 'w-20' : 'w-64'
-      } lg:translate-x-0 lg:w-64`}
-    >
-      <div className='flex flex-col h-full'>
-        <div className='flex items-center justify-between h-16 px-4 border-b border-monkey-muted/30'>
-          {!collapsed && (
-            <NavLink to='/dashboard' className='flex items-center gap-2'>
-              <div className='w-8 h-8 bg-monkey-primary rounded-lg flex items-center justify-center'>
-                <Wallet className='w-5 h-5 text-monkey-bg' />
-              </div>
-              <span className='font-bold text-monkey-text text-lg'>
-                Monkey Finance
-              </span>
-            </NavLink>
-          )}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setCollapsed(!collapsed)}
-            className='p-1 rounded-lg hover:bg-monkey-muted/20 text-monkey-muted lg:hidden'
-            aria-label={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
-          >
-            {collapsed ? (
-              <ChevronRight className='w-5 h-5' />
-            ) : (
-              <ChevronLeft className='w-5 h-5' />
-            )}
-          </motion.button>
+    <>
+      {/* Desktop: sempre visível, sem animação. */}
+      <aside className='fixed top-0 left-0 z-50 hidden h-screen w-64 flex-col border-r border-monkey-muted/30 bg-monkey-card lg:flex'>
+        <div className='flex h-16 items-center px-4 border-b border-monkey-muted/30'>
+          <NavLink to='/dashboard' className='flex items-center gap-2'>
+            <div className='w-8 h-8 bg-monkey-primary rounded-lg flex items-center justify-center'>
+              <Wallet className='w-5 h-5 text-monkey-bg' />
+            </div>
+            <span className='font-bold text-monkey-text text-lg'>
+              Monkey Finance
+            </span>
+          </NavLink>
         </div>
 
-        <nav className='flex-1 px-3 py-4 space-y-1 overflow-y-auto'>
+        <nav className='flex-1 space-y-1 overflow-y-auto px-3 py-4'>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
+                    isActive
+                      ? 'bg-monkey-primary/20 text-monkey-primary'
+                      : 'text-monkey-muted hover:bg-monkey-muted/10 hover:text-monkey-text'
+                  }`
+                }
+              >
+                <Icon className='w-5 h-5 flex-shrink-0' aria-hidden='true' />
+                <span className='font-medium'>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        <div className='border-t border-monkey-muted/30 p-3'>
+          {user && (
+            <div className='mb-3 rounded-lg bg-monkey-muted/10 px-3 py-2'>
+              <p className='truncate text-xs text-monkey-muted'>
+                {user.email}
+              </p>
+            </div>
+          )}
+          <button
+            onClick={handleSignOut}
+            className='w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-monkey-danger transition-colors hover:bg-monkey-danger/10'
+          >
+            <LogOut className='w-5 h-5 flex-shrink-0' aria-hidden='true' />
+            <span className='font-medium'>Sair</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Celular: gaveta que desliza. Some do fluxo quando fechada (para não
+          capturar toques fora da tela). */}
+      <aside
+        className={`fixed top-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-monkey-muted/30 bg-monkey-card transition-transform duration-200 ease-out lg:hidden ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+        style={{
+          visibility: isOpen ? 'visible' : 'hidden',
+          transitionProperty: 'transform, visibility',
+        }}
+      >
+        <div className='flex h-16 items-center px-4 border-b border-monkey-muted/30'>
+          <div className='flex items-center gap-2'>
+            <div className='w-8 h-8 bg-monkey-primary rounded-lg flex items-center justify-center'>
+              <Wallet className='w-5 h-5 text-monkey-bg' />
+            </div>
+            <span className='font-bold text-monkey-text text-lg'>Menu</span>
+          </div>
+        </div>
+
+        <nav className='flex-1 space-y-1 overflow-y-auto px-3 py-4'>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -72,54 +118,36 @@ export default function Sidebar({ isOpen, onClose }) {
               <NavLink
                 key={item.path}
                 to={item.path}
-                onClick={onClose}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
                   isActive
                     ? 'bg-monkey-primary/20 text-monkey-primary'
                     : 'text-monkey-muted hover:bg-monkey-muted/10 hover:text-monkey-text'
                 }`}
-                title={collapsed ? item.label : undefined}
               >
                 <Icon className='w-5 h-5 flex-shrink-0' aria-hidden='true' />
-                {!collapsed && (
-                  <span className='font-medium'>{item.label}</span>
-                )}
+                <span className='font-medium'>{item.label}</span>
               </NavLink>
             );
           })}
         </nav>
 
-        <div className='p-3 border-t border-monkey-muted/30'>
-          {!collapsed && user && (
-            <div className='mb-3 px-3 py-2 bg-monkey-muted/10 rounded-lg'>
-              <p className='text-xs text-monkey-muted truncate'>{user.email}</p>
+        <div className='border-t border-monkey-muted/30 p-3'>
+          {user && (
+            <div className='mb-3 rounded-lg bg-monkey-muted/10 px-3 py-2'>
+              <p className='truncate text-xs text-monkey-muted'>
+                {user.email}
+              </p>
             </div>
           )}
-          <NavLink
-            to='/settings'
-            onClick={onClose}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-              collapsed
-                ? 'justify-center'
-                : 'text-monkey-muted hover:bg-monkey-muted/10 hover:text-monkey-text'
-            }`}
-            title={collapsed ? 'Configurações' : undefined}
-          >
-            <Settings className='w-5 h-5 flex-shrink-0' aria-hidden='true' />
-            {!collapsed && <span className='font-medium'>Configurações</span>}
-          </NavLink>
           <button
             onClick={handleSignOut}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-monkey-danger hover:bg-monkey-danger/10 ${
-              collapsed ? 'justify-center' : ''
-            }`}
-            title={collapsed ? 'Sair' : undefined}
+            className='w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-monkey-danger transition-colors hover:bg-monkey-danger/10'
           >
             <LogOut className='w-5 h-5 flex-shrink-0' aria-hidden='true' />
-            {!collapsed && <span className='font-medium'>Sair</span>}
+            <span className='font-medium'>Sair</span>
           </button>
         </div>
-      </div>
-    </motion.aside>
+      </aside>
+    </>
   );
 }
