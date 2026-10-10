@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { useAuth } from './useAuth';
+import { useAuth } from '../context/AuthContext';
 import { materializeRecurrences } from './useRecurring';
 
 export function useTransactions() {

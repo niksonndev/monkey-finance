@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  formatCurrency,
-  formatDate,
-  formatPercentage,
-  parseLocalDate,
-} from '../formatters';
+import { formatCurrency, formatDate, parseLocalDate } from '../formatters';
 
 describe('formatCurrency', () => {
   it('formata valores em BRL', () => {
@@ -66,15 +61,5 @@ describe('parseLocalDate', () => {
   it('retorna null para entradas vazias', () => {
     expect(parseLocalDate(null)).toBeNull();
     expect(parseLocalDate('')).toBeNull();
-  });
-});
-
-describe('formatPercentage', () => {
-  it('adiciona + para valores positivos', () => {
-    expect(formatPercentage(12.34)).toBe('+12.3%');
-  });
-
-  it('mantém sinal negativo', () => {
-    expect(formatPercentage(-5.5)).toBe('-5.5%');
   });
 });

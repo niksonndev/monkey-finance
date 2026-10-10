@@ -20,21 +20,6 @@ export function formatDate(date) {
   }).format(parseLocalDate(date));
 }
 
-export function formatDateTime(date) {
-  if (!date) return '';
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(parseLocalDate(date));
-}
-
-export function formatPercentage(value) {
-  return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
-}
-
 /**
  * Converte datas para Date no fuso local.
  * Strings no formato 'yyyy-mm-dd' (padrão de inputs type="date" e de colunas
