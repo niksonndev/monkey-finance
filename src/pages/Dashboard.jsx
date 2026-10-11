@@ -22,6 +22,7 @@ export default function Dashboard() {
   const {
     transactions,
     loading,
+    carregandoInicial,
     getSummary,
     getCategorySummary,
     refetch,
@@ -155,7 +156,7 @@ export default function Dashboard() {
               transactions={filteredTransactions}
               onEdit={handleOpenModal}
               onDelete={handleDelete}
-              loading={loading}
+              loading={carregandoInicial}
             />
           </div>
         </div>

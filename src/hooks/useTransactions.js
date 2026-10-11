@@ -6,6 +6,12 @@ import { materializeRecurrences } from './useRecurring';
 export function useTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Marca a primeira carga concluída. O esqueleto de carregamento (a lista
+  // pulsando) só vale enquanto não sabemos se há dados; numa recarga depois de
+  // salvar ou apagar, a lista anterior fica em tela. Sem isso, cada lançamento
+  // fazia a lista inteira sumir e voltar pulsando, que é o que aparecia como
+  // "glitch" na tela.
+  const [jaCarregou, setJaCarregou] = useState(false);
   const [error, setError] = useState(null);
   const { user } = useAuth();
 
@@ -25,6 +31,7 @@ export function useTransactions() {
     } catch (err) {
       setError(err.message);
     } finally {
+      setJaCarregou(true);
       setLoading(false);
     }
   }, [user]);
@@ -155,6 +162,8 @@ export function useTransactions() {
   return {
     transactions,
     loading,
+    /** Só a primeira carga: as recargas mantêm a lista anterior em tela. */
+    carregandoInicial: loading && !jaCarregou,
     error,
     addTransaction,
     updateTransaction,

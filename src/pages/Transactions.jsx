@@ -20,6 +20,7 @@ export default function Transactions() {
   const {
     transactions,
     loading,
+    carregandoInicial,
     refetch,
     addTransaction,
     updateTransaction,
@@ -166,7 +167,7 @@ export default function Transactions() {
               transactions={filteredTransactions}
               onEdit={handleOpenModal}
               onDelete={handleDelete}
-              loading={loading}
+              loading={carregandoInicial}
             />
           </div>
         </div>
