@@ -50,3 +50,13 @@ if (!globalThis.localStorage) {
     }
   }
 }
+
+/**
+ * O jsdom não implementa rolagem: `window.scrollTo` existe, mas registra
+ * "Not implemented" no stderr a cada chamada. O modal de lançamento devolve a
+ * posição da página ao fechar, então cada teste dele sujava a saída com esse
+ * erro. Aqui vira um no-op silencioso.
+ */
+if (typeof window !== 'undefined') {
+  window.scrollTo = () => {};
+}

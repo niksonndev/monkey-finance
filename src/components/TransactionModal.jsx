@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Loader2, Repeat, CalendarDays, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { addDays, addMonths, addWeeks, format } from 'date-fns';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
@@ -60,6 +60,42 @@ export default function TransactionModal({
         }
       : formVazio,
   );
+
+  /**
+   * Com o modal aberto, a página de trás continuava rolando: o gesto de arrastar
+   * dentro da folha (ou sobre o véu) empurrava o dashboard. No celular isso
+   * aparece como glitch, porque o conteúdo atrás do véu desfocado se move por
+   * baixo do modal e o desfoque redesenha a cada quadro; ao fechar, o usuário
+   * caía em outro ponto da página, como se tivesse sido levado para cima ou
+   * para baixo.
+   *
+   * Prende o documento no lugar (posição fixa com o deslocamento atual, que é o
+   * que funciona também no Safari do iPhone) e devolve o scroll no fechamento.
+   */
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const scrollY = window.scrollY;
+    const { body } = document;
+    const anterior = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+    };
+
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+
+    return () => {
+      Object.assign(body.style, anterior);
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
 
   // Categorias dependem do tipo selecionado, não da transação: saem direto do
   // formData (se o tipo ainda não tem categoria escolhida, a primeira da lista
@@ -176,6 +212,7 @@ export default function TransactionModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
             className='absolute inset-0 bg-black/60 backdrop-blur-sm'
             onClick={onClose}
           />
@@ -185,7 +222,15 @@ export default function TransactionModal({
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.98 }}
+            exit={{
+              opacity: 0,
+              y: 40,
+              scale: 0.98,
+              // A saída usa o mesmo tempo do véu. Com a mola, a folha demorava
+              // mais que o véu, e por um instante o modal aparecia "fantasma"
+              // sobre a tela clara (o piscar ao fechar).
+              transition: { duration: 0.18 },
+            }}
             transition={{ type: 'spring', damping: 30, stiffness: 320 }}
             className='relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-monkey-muted/30 bg-monkey-card sm:mx-4 sm:max-w-md sm:rounded-2xl'
             onClick={(e) => e.stopPropagation()}
