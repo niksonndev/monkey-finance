@@ -162,11 +162,44 @@ export function useRecurring() {
     }
   };
 
+  /**
+   * Edita a regra (valor, categoria, descrição, frequência, próxima data).
+   * Só o próximo lançamento em diante muda: o que já foi criado é histórico e
+   * fica como está.
+   */
+  const atualizarRecorrencia = async (id, dados) => {
+    if (!user) return { error: 'Usuário não autenticado' };
+
+    try {
+      const { data, error } = await supabase
+        .from('recurring_transactions')
+        .update(dados)
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select();
+
+      if (error) throw error;
+      if (!data?.length) {
+        return { error: 'Recorrência não encontrada ou sem permissão' };
+      }
+
+      setRecorrencias((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, ...data[0] } : r)),
+      );
+      return { error: null };
+    } catch (err) {
+      return {
+        error: err?.message || 'Não foi possível salvar a recorrência',
+      };
+    }
+  };
+
   return {
     recorrencias,
     loading,
     error,
     encerrarRecorrencia,
+    atualizarRecorrencia,
     refetch: fetchRecorrencias,
   };
 }

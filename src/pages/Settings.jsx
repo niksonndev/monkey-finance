@@ -11,6 +11,7 @@ import {
   LogOut,
   Repeat,
   Coins,
+  Pencil,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -20,6 +21,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useRecurring } from '../hooks/useRecurring';
 import { formatDate } from '../utils/formatters';
 import Avatar from '../components/Avatar';
+import RecurringModal from '../components/RecurringModal';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -28,6 +30,8 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [encerrandoId, setEncerrandoId] = useState(null);
+  /** Recorrência aberta no modal de edição (null = fechado). */
+  const [editandoRecorrencia, setEditandoRecorrencia] = useState(null);
 
   const { currency, currencies, setCurrency, formatValue } = useCurrency();
 
@@ -36,6 +40,8 @@ export default function Settings() {
     loading: loadingRecorrencias,
     error: erroRecorrencias,
     encerrarRecorrencia,
+    atualizarRecorrencia,
+    refetch: refetchRecorrencias,
   } = useRecurring();
 
   // Inicializado a partir dos metadados do usuário: o nome salvo em
@@ -509,7 +515,7 @@ export default function Settings() {
                       </p>
                     </div>
 
-                    <div className='flex items-center justify-between sm:justify-end gap-3'>
+                    <div className='flex items-center justify-between sm:justify-end gap-2 sm:gap-3'>
                       <span
                         className={`font-bold whitespace-nowrap ${
                           recorrencia.type === 'income'
@@ -520,6 +526,15 @@ export default function Settings() {
                         {recorrencia.type === 'income' ? '+' : '-'}
                         {formatValue(recorrencia.amount)}
                       </span>
+
+                      <button
+                        type='button'
+                        onClick={() => setEditandoRecorrencia(recorrencia)}
+                        className='flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-monkey-text bg-monkey-card border border-monkey-muted/30 hover:bg-monkey-muted/10 transition-colors'
+                      >
+                        <Pencil className='w-4 h-4' />
+                        Editar
+                      </button>
 
                       <button
                         type='button'
@@ -684,6 +699,20 @@ export default function Settings() {
           )}
         </div>
       </div>
+
+      {/* Edição da regra de recorrência (valor, categoria, próxima data). O
+          `key` remonta o formulário a cada regra escolhida. */}
+      <RecurringModal
+        key={editandoRecorrencia?.id ?? 'nova'}
+        isOpen={Boolean(editandoRecorrencia)}
+        recorrencia={editandoRecorrencia}
+        onClose={() => setEditandoRecorrencia(null)}
+        onSave={(dados) => atualizarRecorrencia(editandoRecorrencia.id, dados)}
+        onSuccess={() => {
+          showMessage('success', 'Recorrência atualizada');
+          refetchRecorrencias();
+        }}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Loader2, Repeat, CalendarDays, ChevronDown } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { addDays, addMonths, addWeeks, format } from 'date-fns';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +8,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { CATEGORIES } from '../constants/categories';
 import { parseLocalDate, hojeISO } from '../utils/formatters';
 import { currencyInfo } from '../constants/currencies';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 /** Atalhos de data: hoje é o padrão, os outros poupam o seletor nativo. */
 const ATALHOS_DATA = [
@@ -66,41 +67,10 @@ export default function TransactionModal({
       : formVazio,
   );
 
-  /**
-   * Com o modal aberto, a página de trás continuava rolando: o gesto de arrastar
-   * dentro da folha (ou sobre o véu) empurrava o dashboard. No celular isso
-   * aparece como glitch, porque o conteúdo atrás do véu desfocado se move por
-   * baixo do modal e o desfoque redesenha a cada quadro; ao fechar, o usuário
-   * caía em outro ponto da página, como se tivesse sido levado para cima ou
-   * para baixo.
-   *
-   * Prende o documento no lugar (posição fixa com o deslocamento atual, que é o
-   * que funciona também no Safari do iPhone) e devolve o scroll no fechamento.
-   */
-  useEffect(() => {
-    if (!isOpen) return undefined;
-
-    const scrollY = window.scrollY;
-    const { body } = document;
-    const anterior = {
-      position: body.style.position,
-      top: body.style.top,
-      left: body.style.left,
-      right: body.style.right,
-      width: body.style.width,
-    };
-
-    body.style.position = 'fixed';
-    body.style.top = `-${scrollY}px`;
-    body.style.left = '0';
-    body.style.right = '0';
-    body.style.width = '100%';
-
-    return () => {
-      Object.assign(body.style, anterior);
-      window.scrollTo(0, scrollY);
-    };
-  }, [isOpen]);
+  // Prende a rolagem da página de trás enquanto a folha está aberta (o gesto
+  // de arrastar dentro do modal empurrava o dashboard, que aparecia como
+  // "glitch" por baixo do véu desfocado).
+  useBodyScrollLock(isOpen);
 
   // Categorias dependem do tipo selecionado, não da transação: saem direto do
   // formData (o tipo já ajusta a categoria no clique, ver handleTipoChange).
