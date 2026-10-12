@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { CATEGORIES } from '../constants/categories';
-import { parseLocalDate } from '../utils/formatters';
+import { parseLocalDate, hojeISO } from '../utils/formatters';
 import { currencyInfo } from '../constants/currencies';
 
 /** Atalhos de data: hoje é o padrão, os outros poupam o seletor nativo. */
@@ -30,7 +30,7 @@ export default function TransactionModal({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const hoje = new Date().toISOString().split('T')[0];
+  const hoje = hojeISO();
   const formVazio = {
     type: 'expense',
     amount: '',

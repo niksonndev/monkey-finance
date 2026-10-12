@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { addDays, format } from 'date-fns';
 import TransactionModal from '../TransactionModal';
 
 /**
@@ -109,9 +110,9 @@ describe('TransactionModal', () => {
   });
 
   it('atalhos de data mudam a data do formulário', async () => {
-    const ontem = new Date();
-    ontem.setDate(ontem.getDate() - 1);
-    const isoOntem = ontem.toISOString().split('T')[0];
+    // Dia local, não UTC: `toISOString()` devolveria o dia seguinte quando o
+    // teste roda depois das 21h no Brasil, e ele falharia sozinho à noite.
+    const isoOntem = format(addDays(new Date(), -1), 'yyyy-MM-dd');
 
     render(modalCom());
     await waitFor(() => {
@@ -119,6 +120,20 @@ describe('TransactionModal', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Ontem' }));
     expect(screen.getByLabelText('Data').value).toBe(isoOntem);
+  });
+
+  it('abre com a data de hoje no fuso do aparelho', async () => {
+    // Mesma armadilha do teste acima, agora no valor padrão do campo: à noite,
+    // o lançamento nascia com a data de amanhã (e no fim do mês, no mês
+    // seguinte).
+    const agora = new Date();
+    const hojeLocal = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+
+    render(modalCom());
+    await waitFor(() => {
+      expect(screen.getByText('Nova transação')).toBeTruthy();
+    });
+    expect(screen.getByLabelText('Data').value).toBe(hojeLocal);
   });
 
   it('switch de recorrência revela a frequência', async () => {

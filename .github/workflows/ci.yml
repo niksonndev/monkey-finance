@@ -42,6 +42,12 @@ jobs:
         run: pnpm lint
 
       - name: Testes
+        env:
+          # O CI roda em UTC por padrão, e as datas do app são do aparelho:
+          # nesse fuso, um bug de data (data de hoje lida em UTC, que fura o
+          # dia depois das 21h no Brasil) passaria batido. Fixar o fuso aqui
+          # faz a suíte olhar o mesmo calendário que o usuário.
+          TZ: America/Maceio
         run: pnpm test
 
       # As VITE_* são embutidas no bundle pelo Vite: não são segredo de

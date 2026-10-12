@@ -12,7 +12,7 @@ import {
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { parseLocalDate } from '../utils/formatters';
+import { parseLocalDate, hojeISO } from '../utils/formatters';
 import { useCurrency } from '../context/CurrencyContext';
 import { currencyInfo } from '../constants/currencies';
 
@@ -238,9 +238,7 @@ export default function Filters({
                     value={filters.dateFrom}
                     onChange={(e) => aplicar({ dateFrom: e.target.value })}
                     className='input-field px-2 py-1.5 text-sm'
-                    max={
-                      filters.dateTo || new Date().toISOString().split('T')[0]
-                    }
+                    max={filters.dateTo || hojeISO()}
                     disabled={loading}
                   />
                 </LabeledField>
@@ -251,7 +249,7 @@ export default function Filters({
                     onChange={(e) => aplicar({ dateTo: e.target.value })}
                     className='input-field px-2 py-1.5 text-sm'
                     min={filters.dateFrom}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={hojeISO()}
                     disabled={loading}
                   />
                 </LabeledField>

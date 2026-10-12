@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { formatCurrency, formatDate, parseLocalDate } from '../formatters';
+import {
+  formatCurrency,
+  formatDate,
+  hojeISO,
+  parseLocalDate,
+} from '../formatters';
 
 describe('formatCurrency', () => {
   it('formata valores em BRL', () => {
@@ -61,5 +66,20 @@ describe('parseLocalDate', () => {
   it('retorna null para entradas vazias', () => {
     expect(parseLocalDate(null)).toBeNull();
     expect(parseLocalDate('')).toBeNull();
+  });
+});
+
+describe('hojeISO', () => {
+  it('usa o dia do aparelho, não o dia em UTC', () => {
+    // 31/10/2026 às 23h no Brasil já é 01/11 em UTC: o valor tem de continuar
+    // sendo o dia 31 (com `toISOString()` vinha 2026-11-01, e um lançamento
+    // feito à noite nascia no mês seguinte).
+    expect(hojeISO(new Date(2026, 9, 31, 23, 30))).toBe('2026-10-31');
+    // Antes das 21h o fuso não muda nada: o valor é o mesmo nos dois jeitos.
+    expect(hojeISO(new Date(2026, 9, 15, 9, 5))).toBe('2026-10-15');
+  });
+
+  it('devolve o formato das colunas date do Postgres', () => {
+    expect(hojeISO(new Date(2026, 0, 7))).toBe('2026-01-07');
   });
 });

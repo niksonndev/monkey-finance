@@ -1,3 +1,5 @@
+import { format } from 'date-fns';
+
 /**
  * Formata um valor na moeda informada (padrão BRL, mantido por compatibilidade).
  * A moeda ativa do app vem de useCurrency() — ver CurrencyContext.
@@ -33,4 +35,17 @@ export function parseLocalDate(date) {
     return new Date(year, month - 1, day);
   }
   return new Date(date);
+}
+
+/**
+ * Data de hoje no fuso do aparelho, no formato 'yyyy-mm-dd' (o mesmo dos
+ * inputs type="date" e das colunas `date` do Postgres).
+ *
+ * Não use `new Date().toISOString().split('T')[0]`: ele devolve a data em UTC.
+ * No Brasil (UTC-3) isso significa que, das 21h em diante, o valor já é o de
+ * amanhã — e no último dia do mês o lançamento nasce no mês seguinte, fora da
+ * tela do mês aberto.
+ */
+export function hojeISO(data = new Date()) {
+  return format(data, 'yyyy-MM-dd');
 }
