@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import MobileNav from './MobileNav';
 import { useState } from 'react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 /**
  * Casca do app logado: menu lateral (fixo no desktop, gaveta no celular) e
@@ -23,6 +24,10 @@ export default function Layout() {
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
+
+  // Com a gaveta aberta, a página de trás não pode rolar pelo gesto que começa
+  // no véu (é o mesmo incômodo que o modal de lançamento já corrigia).
+  useBodyScrollLock(sidebarOpen);
 
   return (
     <div className='min-h-screen bg-monkey-bg'>

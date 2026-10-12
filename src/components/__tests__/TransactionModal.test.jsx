@@ -178,6 +178,24 @@ describe('TransactionModal', () => {
     expect(screen.getByLabelText('Data').value).toBe(hojeLocal);
   });
 
+  it('fecha com Esc e devolve a rolagem ao fechar', async () => {
+    const onClose = vi.fn();
+    const { unmount } = render(modalCom({ onClose }));
+    await waitFor(() => {
+      expect(screen.getByText('Nova transação')).toBeTruthy();
+    });
+
+    // Enquanto a folha está aberta, o documento fica preso no lugar (sem isso
+    // o gesto por dentro do modal empurrava a página de trás).
+    expect(document.body.style.position).toBe('fixed');
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    unmount();
+    expect(document.body.style.position).toBe('');
+  });
+
   it('switch de recorrência revela a frequência', async () => {
     render(modalCom());
     await waitFor(() => {

@@ -9,6 +9,7 @@ import { CATEGORIES } from '../constants/categories';
 import { parseLocalDate, hojeISO } from '../utils/formatters';
 import { currencyInfo } from '../constants/currencies';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 /** Atalhos de data: hoje é o padrão, os outros poupam o seletor nativo. */
 const ATALHOS_DATA = [
@@ -69,8 +70,9 @@ export default function TransactionModal({
 
   // Prende a rolagem da página de trás enquanto a folha está aberta (o gesto
   // de arrastar dentro do modal empurrava o dashboard, que aparecia como
-  // "glitch" por baixo do véu desfocado).
+  // "glitch" por baixo do véu desfocado) e fecha com Esc no computador.
   useBodyScrollLock(isOpen);
+  useEscapeKey(isOpen, onClose);
 
   // Categorias dependem do tipo selecionado, não da transação: saem direto do
   // formData (o tipo já ajusta a categoria no clique, ver handleTipoChange).
@@ -218,6 +220,9 @@ export default function TransactionModal({
           {/* No celular sobe como folha (mais fácil de alcançar com o dedo);
               no desktop continua modal centralizado. */}
           <motion.div
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby='transaction-modal-title'
             initial={{ opacity: 0, y: 40, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{
@@ -234,7 +239,10 @@ export default function TransactionModal({
             onClick={(e) => e.stopPropagation()}
           >
             <div className='flex items-center justify-between border-b border-monkey-muted/30 px-4 py-3.5 sm:px-5'>
-              <h2 className='text-lg font-bold text-monkey-text'>
+              <h2
+                id='transaction-modal-title'
+                className='text-lg font-bold text-monkey-text'
+              >
                 {transaction ? 'Editar transação' : 'Nova transação'}
               </h2>
               <button
@@ -248,6 +256,7 @@ export default function TransactionModal({
             </div>
 
             <form
+              id='form-transacao'
               onSubmit={handleSubmit}
               className='flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-5'
             >
@@ -542,8 +551,8 @@ export default function TransactionModal({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 type='submit'
+                form='form-transacao'
                 disabled={loading}
-                onClick={handleSubmit}
                 className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold text-monkey-bg transition-colors disabled:opacity-60 ${
                   ehReceita
                     ? 'bg-monkey-success hover:brightness-110'

@@ -5,6 +5,7 @@ import { CATEGORIES } from '../constants/categories';
 import { currencyInfo } from '../constants/currencies';
 import { useCurrency } from '../context/CurrencyContext';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 /**
  * Edição de uma recorrência (a regra, não os lançamentos que ela já gerou):
@@ -35,6 +36,7 @@ export default function RecurringModal({
   }));
 
   useBodyScrollLock(isOpen);
+  useEscapeKey(isOpen, onClose);
 
   const categorias = CATEGORIES[recorrencia?.type] || [];
   const categoriaForaDaLista =
@@ -97,6 +99,9 @@ export default function RecurringModal({
           />
 
           <motion.div
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby='recurring-modal-title'
             initial={{ opacity: 0, y: 40, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{
@@ -110,7 +115,10 @@ export default function RecurringModal({
             onClick={(e) => e.stopPropagation()}
           >
             <div className='flex items-center justify-between border-b border-monkey-muted/30 px-4 py-3.5 sm:px-5'>
-              <h2 className='text-lg font-bold text-monkey-text'>
+              <h2
+                id='recurring-modal-title'
+                className='text-lg font-bold text-monkey-text'
+              >
                 Editar recorrência
               </h2>
               <button
