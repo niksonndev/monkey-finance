@@ -82,6 +82,48 @@ describe('TransactionModal', () => {
     });
   });
 
+  it('trocar o tipo troca a categoria pela primeira da lista nova', async () => {
+    render(modalCom());
+    await waitFor(() => {
+      expect(screen.getByText('Nova transação')).toBeTruthy();
+    });
+    expect(screen.getByLabelText('Categoria').value).toBe('Gasto Fixo');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Receita' }));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Categoria').value).toBe('Salário');
+    });
+  });
+
+  it('preserva a categoria de um lançamento antigo que saiu da lista', async () => {
+    // O caso real: lançamento gravado quando as opções eram outras (ou sem
+    // categoria, que a lista chama de "Sem categoria"). Ao editar, a categoria
+    // era trocada pela primeira da lista durante o render e salva assim mesmo.
+    const onSave = vi.fn().mockResolvedValue({ error: null });
+    render(
+      modalCom({
+        onSave,
+        transaction: {
+          id: '9',
+          type: 'expense',
+          amount: 20,
+          category: 'Outros',
+          description: 'mercado',
+          date: '2026-10-05',
+        },
+      }),
+    );
+    await waitFor(() => {
+      expect(screen.getByText('Editar transação')).toBeTruthy();
+    });
+
+    expect(screen.getByLabelText('Categoria').value).toBe('Outros');
+
+    fireEvent.click(screen.getByRole('button', { name: /Atualizar/ }));
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    expect(onSave.mock.calls[0][0].category).toBe('Outros');
+  });
+
   it('mostra erro ao salvar valor inválido', async () => {
     const onSave = vi.fn();
     render(modalCom({ onSave }));

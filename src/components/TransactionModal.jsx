@@ -34,7 +34,9 @@ export default function TransactionModal({
   const formVazio = {
     type: 'expense',
     amount: '',
-    category: '',
+    // A lista de categorias é por tipo, então já vem a primeira de despesa
+    // selecionada: é o caso mais comum e poupa um toque em quem lança.
+    category: CATEGORIES.expense[0],
     description: '',
     date: hoje,
     is_recurring: false,
@@ -52,7 +54,10 @@ export default function TransactionModal({
       ? {
           type: transaction.type,
           amount: transaction.amount,
-          category: transaction.category,
+          // A categoria salva é preservada como está, mesmo que não esteja mais
+          // na lista do app (ver categoriaForaDaLista abaixo): reescrever aqui
+          // trocaria a categoria de um lançamento antigo sem a pessoa pedir.
+          category: transaction.category || '',
           description: transaction.description || '',
           date: transaction.date?.split('T')[0] || hoje,
           is_recurring: transaction.is_recurring || false,
@@ -98,12 +103,35 @@ export default function TransactionModal({
   }, [isOpen]);
 
   // Categorias dependem do tipo selecionado, não da transação: saem direto do
-  // formData (se o tipo ainda não tem categoria escolhida, a primeira da lista
-  // entra no estado antes da tela pintar).
+  // formData (o tipo já ajusta a categoria no clique, ver handleTipoChange).
   const categorias = CATEGORIES[formData.type] || [];
-  if (!categorias.includes(formData.category) && categorias[0]) {
-    setFormData((prev) => ({ ...prev, category: categorias[0] }));
-  }
+
+  /**
+   * Categoria que não está na lista do app: lançamento antigo, criado quando as
+   * opções eram outras (ou sem categoria, que a lista mostra como "Sem
+   * categoria").
+   * Ela continua valendo e vira uma opção própria no seletor. Antes o código
+   * trocava pela primeira da lista durante o render, e salvar qualquer campo
+   * daquele lançamento reescrevia a categoria sem a pessoa perceber.
+   */
+  const categoriaForaDaLista =
+    formData.category && !categorias.includes(formData.category)
+      ? formData.category
+      : null;
+
+  /**
+   * Troca o tipo e recalcula a categoria: as listas são diferentes por tipo,
+   * então a que estava não pode simplesmente continuar (uma despesa "Gasto
+   * Fixo" não existe em receitas).
+   */
+  const handleTipoChange = (type) => {
+    const lista = CATEGORIES[type] || [];
+    setFormData((prev) => ({
+      ...prev,
+      type,
+      category: lista.includes(prev.category) ? prev.category : (lista[0] ?? ''),
+    }));
+  };
 
   const ehReceita = formData.type === 'income';
 
@@ -276,9 +304,7 @@ export default function TransactionModal({
                         key={type}
                         type='button'
                         aria-pressed={ativo}
-                        onClick={() =>
-                          setFormData((prev) => ({ ...prev, type }))
-                        }
+                        onClick={() => handleTipoChange(type)}
                         className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition-colors ${
                           ativo
                             ? receita
@@ -347,6 +373,11 @@ export default function TransactionModal({
                     }`}
                   >
                     <option value=''>Selecione uma categoria</option>
+                    {categoriaForaDaLista && (
+                      <option value={categoriaForaDaLista}>
+                        {categoriaForaDaLista}
+                      </option>
+                    )}
                     {categorias.map((cat) => (
                       <option key={cat} value={cat}>
                         {cat}
