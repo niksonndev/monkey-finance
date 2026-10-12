@@ -552,7 +552,19 @@ export default function Settings() {
                   Preferências de notificação
                 </h3>
                 <p className='text-monkey-muted text-sm mb-4'>
-                  Escolha como deseja receber atualizações sobre suas finanças
+                  Escolha o que você quer receber quando o envio entrar no ar.
+                </p>
+              </div>
+
+              {/* A tela prometia e-mail e push sem existir envio nenhum: as
+                  escolhas ficam salvas (por usuário, no aparelho), mas nada é
+                  disparado. Melhor dizer isso do que deixar a pessoa esperando
+                  um relatório que nunca chega. */}
+              <div className='flex items-start gap-3 p-3 rounded-lg bg-monkey-muted/10 border border-monkey-muted/20'>
+                <AlertCircle className='w-5 h-5 text-monkey-primary flex-shrink-0 mt-0.5' />
+                <p className='text-sm text-monkey-muted'>
+                  Ainda não enviamos e-mail nem notificação no navegador. Suas
+                  escolhas ficam guardadas para quando isso existir.
                 </p>
               </div>
 
