@@ -32,7 +32,10 @@ export function useTransactions() {
       if (error) throw error;
       setTransactions(data || []);
     } catch (err) {
-      setError(err.message);
+      // `err?.message` cobre o erro do PostgREST (objeto com message) e a
+      // falha de rede (TypeError); sem isso, um erro sem `message` deixava a
+      // tela sem aviso nenhum.
+      setError(err?.message || 'Não foi possível carregar seus lançamentos');
     } finally {
       setJaCarregou(true);
       setLoading(false);

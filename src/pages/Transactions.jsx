@@ -1,94 +1,36 @@
-import { useState, useMemo } from 'react';
 import { Plus, FileDown } from 'lucide-react';
-import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  subMonths,
-  addMonths,
-} from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useTransactions } from '../hooks/useTransactions';
 import TransactionList from '../components/TransactionList';
 import TransactionModal from '../components/TransactionModal';
 import Filters from '../components/Filters';
 import MonthNavigator from '../components/MonthNavigator';
 import { parseLocalDate } from '../utils/formatters';
-import { filterAndSortTransactions } from '../utils/transactionFilters';
+import { useTransactionPage } from '../hooks/useTransactionPage';
 
 export default function Transactions() {
   const {
-    transactions,
+    monthlyTransactions,
+    filteredTransactions,
     loading,
     carregandoInicial,
     error,
     refetch,
-    addTransaction,
-    updateTransaction,
-    deleteTransaction,
-  } = useTransactions();
-  const [showModal, setShowModal] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [filters, setFilters] = useState({
-    type: '',
-    category: '',
-    dateFrom: '',
-    dateTo: '',
-    search: '',
-    sortBy: 'date_desc',
-    minAmount: '',
-    maxAmount: '',
-  });
-
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
-
-  const monthlyTransactions = useMemo(() => {
-    return transactions.filter((t) => {
-      const date = parseLocalDate(t.date);
-      return date >= monthStart && date <= monthEnd;
-    });
-  }, [transactions, monthStart, monthEnd]);
-
-  const filteredTransactions = useMemo(
-    () => filterAndSortTransactions(monthlyTransactions, filters),
-    [monthlyTransactions, filters],
-  );
-
-  const handleOpenModal = (transaction = null) => {
-    setEditingTransaction(transaction);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingTransaction(null);
-  };
-
-  const handleSuccess = () => {
-    handleCloseModal();
-    refetch();
-  };
-
-  const handleSave = async (transactionData) => {
-    if (editingTransaction) {
-      return updateTransaction(editingTransaction.id, transactionData);
-    }
-    return addTransaction(transactionData);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir esta transação?')) {
-      const { error } = await deleteTransaction(id);
-      if (error) console.error('Erro ao excluir transação:', error);
-      refetch();
-    }
-  };
-
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const goToCurrentMonth = () => setCurrentMonth(new Date());
+    currentMonth,
+    prevMonth,
+    nextMonth,
+    goToCurrentMonth,
+    filters,
+    setFilters,
+    limparFiltros,
+    showModal,
+    editingTransaction,
+    abrirModal,
+    fecharModal,
+    handleSave,
+    handleSuccess,
+    handleDelete,
+  } = useTransactionPage();
 
   // Escapa campos para CSV: aspas duplas, separadores e quebras de linha
   const escapeCsvField = (value) => {
@@ -141,7 +83,7 @@ export default function Transactions() {
                 Exportar planilha
               </button>
               <button
-                onClick={() => handleOpenModal()}
+                onClick={() => abrirModal()}
                 className='btn-primary flex items-center gap-2'
               >
                 <Plus className='w-4 h-4' />
@@ -166,7 +108,7 @@ export default function Transactions() {
             </div>
             <TransactionList
               transactions={filteredTransactions}
-              onEdit={handleOpenModal}
+              onEdit={abrirModal}
               onDelete={handleDelete}
               loading={carregandoInicial}
               error={error}
@@ -179,18 +121,7 @@ export default function Transactions() {
           <Filters
             filters={filters}
             onFiltersChange={setFilters}
-            onClearFilters={() =>
-              setFilters({
-                type: '',
-                category: '',
-                dateFrom: '',
-                dateTo: '',
-                search: '',
-                sortBy: 'date_desc',
-                minAmount: '',
-                maxAmount: '',
-              })
-            }
+            onClearFilters={limparFiltros}
             transactions={monthlyTransactions}
             loading={loading}
           />
@@ -202,7 +133,7 @@ export default function Transactions() {
       <TransactionModal
         key={editingTransaction?.id ?? 'nova'}
         isOpen={showModal}
-        onClose={handleCloseModal}
+        onClose={fecharModal}
         onSuccess={handleSuccess}
         onSave={handleSave}
         transaction={editingTransaction}
