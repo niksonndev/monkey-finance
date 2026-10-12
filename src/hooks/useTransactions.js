@@ -20,6 +20,9 @@ export function useTransactions() {
 
     try {
       setLoading(true);
+      // Limpa o aviso da tentativa anterior: sem isso, uma falha antiga ficava
+      // em tela mesmo depois de a lista carregar normalmente.
+      setError(null);
       const { data, error } = await supabase
         .from('transactions')
         .select('*')

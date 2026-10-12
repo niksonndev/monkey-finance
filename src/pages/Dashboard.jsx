@@ -23,6 +23,7 @@ export default function Dashboard() {
     transactions,
     loading,
     carregandoInicial,
+    error,
     getSummary,
     getCategorySummary,
     refetch,
@@ -157,6 +158,8 @@ export default function Dashboard() {
               onEdit={handleOpenModal}
               onDelete={handleDelete}
               loading={carregandoInicial}
+              error={error}
+              onRetry={refetch}
             />
           </div>
         </div>

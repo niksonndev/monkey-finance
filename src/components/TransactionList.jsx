@@ -1,5 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Edit, CreditCard, Loader2 } from 'lucide-react';
+import {
+  Trash2,
+  Edit,
+  CreditCard,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
@@ -30,6 +37,8 @@ export default function TransactionList({
   onEdit,
   onDelete,
   loading,
+  error,
+  onRetry,
 }) {
   const [deletingId, setDeletingId] = useState(null);
   const { formatValue } = useCurrency();
@@ -82,6 +91,43 @@ export default function TransactionList({
     );
   }
 
+  /**
+   * Falha de carga. Antes o erro ficava só no console e a tela mostrava
+   * "Nenhuma transação": sem internet (ou com o banco fora), quem já usa o app
+   * via a lista vazia e achava que tinha perdido os lançamentos. Sem dado em
+   * tela, o aviso ocupa o lugar da lista; com dado em tela (uma recarga que
+   * falhou), fica como faixa acima do que já estava carregado.
+   */
+  if (error && (!transactions || transactions.length === 0)) {
+    return (
+      <div
+        role='alert'
+        className='flex flex-col items-center justify-center gap-3 py-12 text-center'
+      >
+        <div className='w-16 h-16 bg-monkey-danger/10 rounded-full flex items-center justify-center'>
+          <AlertCircle className='w-8 h-8 text-monkey-danger' />
+        </div>
+        <h3 className='text-lg font-medium text-monkey-text'>
+          Não foi possível carregar seus lançamentos
+        </h3>
+        <p className='text-monkey-muted text-sm max-w-xs'>
+          Nada foi perdido: seus lançamentos continuam salvos. Verifique a
+          conexão e tente de novo.
+        </p>
+        {onRetry && (
+          <button
+            type='button'
+            onClick={onRetry}
+            className='btn-secondary flex items-center gap-2'
+          >
+            <RefreshCw className='w-4 h-4' />
+            Tentar de novo
+          </button>
+        )}
+      </div>
+    );
+  }
+
   if (!transactions || transactions.length === 0) {
     return (
       <motion.div
@@ -104,6 +150,28 @@ export default function TransactionList({
 
   return (
     <div className='space-y-4'>
+      {error && (
+        <div
+          role='alert'
+          className='flex items-center gap-2 rounded-lg border border-monkey-danger/25 bg-monkey-danger/10 px-3 py-2 text-sm text-monkey-danger'
+        >
+          <AlertCircle className='w-4 h-4 flex-shrink-0' />
+          <span className='flex-1'>
+            Não foi possível atualizar a lista. Os lançamentos na tela são os
+            últimos carregados.
+          </span>
+          {onRetry && (
+            <button
+              type='button'
+              onClick={onRetry}
+              className='font-medium underline underline-offset-2'
+            >
+              Tentar de novo
+            </button>
+          )}
+        </div>
+      )}
+
       {agruparPorDia(transactions).map((grupo) => {
         const saldo = saldoDoDia(grupo.itens);
 

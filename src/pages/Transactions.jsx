@@ -21,6 +21,7 @@ export default function Transactions() {
     transactions,
     loading,
     carregandoInicial,
+    error,
     refetch,
     addTransaction,
     updateTransaction,
@@ -168,6 +169,8 @@ export default function Transactions() {
               onEdit={handleOpenModal}
               onDelete={handleDelete}
               loading={carregandoInicial}
+              error={error}
+              onRetry={refetch}
             />
           </div>
         </div>
