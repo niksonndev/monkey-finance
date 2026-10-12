@@ -5,6 +5,7 @@ import TransactionList from '../components/TransactionList';
 import TransactionModal from '../components/TransactionModal';
 import Filters from '../components/Filters';
 import MonthNavigator from '../components/MonthNavigator';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { parseLocalDate } from '../utils/formatters';
 import { useTransactionPage } from '../hooks/useTransactionPage';
 
@@ -29,7 +30,11 @@ export default function Transactions() {
     fecharModal,
     handleSave,
     handleSuccess,
-    handleDelete,
+    pedirExclusao,
+    transacaoParaExcluir,
+    excluindo,
+    cancelarExclusao,
+    confirmarExclusao,
   } = useTransactionPage();
 
   // Escapa campos para CSV: aspas duplas, separadores e quebras de linha
@@ -109,7 +114,7 @@ export default function Transactions() {
             <TransactionList
               transactions={filteredTransactions}
               onEdit={abrirModal}
-              onDelete={handleDelete}
+              onDelete={pedirExclusao}
               loading={carregandoInicial}
               error={error}
               onRetry={refetch}
@@ -137,6 +142,23 @@ export default function Transactions() {
         onSuccess={handleSuccess}
         onSave={handleSave}
         transaction={editingTransaction}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(transacaoParaExcluir)}
+        title='Excluir esta transação?'
+        description={
+          transacaoParaExcluir
+            ? `${
+                transacaoParaExcluir.description ||
+                transacaoParaExcluir.category ||
+                'Lançamento'
+              } sai da sua lista. Não dá para desfazer.`
+            : ''
+        }
+        loading={excluindo}
+        onConfirm={confirmarExclusao}
+        onCancel={cancelarExclusao}
       />
     </div>
   );

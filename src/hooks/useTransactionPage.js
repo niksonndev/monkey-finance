@@ -99,15 +99,23 @@ export function useTransactionPage() {
     [deleteTransaction, refetch],
   );
 
-  const handleDelete = useCallback(
-    async (id) => {
-      if (!window.confirm('Tem certeza que deseja excluir esta transação?')) {
-        return { error: null };
-      }
-      return excluirTransacao(id);
-    },
-    [excluirTransacao],
+  // Exclusão pedida na lista: abre a confirmação e só exclui depois do "sim".
+  const [transacaoParaExcluir, setTransacaoParaExcluir] = useState(null);
+  const [excluindo, setExcluindo] = useState(false);
+
+  const pedirExclusao = useCallback(
+    (transaction) => setTransacaoParaExcluir(transaction),
+    [],
   );
+  const cancelarExclusao = useCallback(() => setTransacaoParaExcluir(null), []);
+
+  const confirmarExclusao = useCallback(async () => {
+    if (!transacaoParaExcluir) return;
+    setExcluindo(true);
+    await excluirTransacao(transacaoParaExcluir.id);
+    setExcluindo(false);
+    setTransacaoParaExcluir(null);
+  }, [transacaoParaExcluir, excluirTransacao]);
 
   const prevMonth = useCallback(
     () => setCurrentMonth((mes) => subMonths(mes, 1)),
@@ -149,7 +157,13 @@ export function useTransactionPage() {
     fecharModal,
     handleSave,
     handleSuccess,
-    handleDelete,
     excluirTransacao,
+
+    // confirmação de exclusão (a tela renderiza o diálogo)
+    transacaoParaExcluir,
+    excluindo,
+    pedirExclusao,
+    cancelarExclusao,
+    confirmarExclusao,
   };
 }

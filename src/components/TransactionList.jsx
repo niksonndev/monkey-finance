@@ -1,12 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Trash2,
-  Edit,
-  CreditCard,
-  Loader2,
-  AlertCircle,
-  RefreshCw,
-} from 'lucide-react';
+import { Trash2, Edit, CreditCard, AlertCircle, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
@@ -40,7 +33,6 @@ export default function TransactionList({
   error,
   onRetry,
 }) {
-  const [deletingId, setDeletingId] = useState(null);
   const { formatValue } = useCurrency();
 
   /**
@@ -58,17 +50,6 @@ export default function TransactionList({
   useEffect(() => {
     if (!jaApareceu) setJaApareceu(true);
   }, [jaApareceu]);
-
-  // Confirmação fica a cargo da página (onDelete); aqui apenas
-  // mostramos o spinner enquanto a exclusão está em andamento.
-  const handleDeleteClick = async (id) => {
-    setDeletingId(id);
-    try {
-      await onDelete(id);
-    } finally {
-      setDeletingId(null);
-    }
-  };
 
   if (loading) {
     return (
@@ -259,16 +240,11 @@ export default function TransactionList({
                             <Edit className='w-3.5 h-3.5' />
                           </button>
                           <button
-                            onClick={() => handleDeleteClick(transaction.id)}
-                            disabled={deletingId === transaction.id}
+                            onClick={() => onDelete(transaction)}
                             className='p-1.5 rounded-md text-monkey-muted hover:bg-monkey-danger/10 hover:text-monkey-danger transition-colors'
                             aria-label='Excluir transação'
                           >
-                            {deletingId === transaction.id ? (
-                              <Loader2 className='w-3.5 h-3.5 animate-spin' />
-                            ) : (
-                              <Trash2 className='w-3.5 h-3.5' />
-                            )}
+                            <Trash2 className='w-3.5 h-3.5' />
                           </button>
                         </div>
                       </div>

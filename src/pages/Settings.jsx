@@ -22,6 +22,7 @@ import { useRecurring } from '../hooks/useRecurring';
 import { formatDate } from '../utils/formatters';
 import Avatar from '../components/Avatar';
 import RecurringModal from '../components/RecurringModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -32,6 +33,9 @@ export default function Settings() {
   const [encerrandoId, setEncerrandoId] = useState(null);
   /** Recorrência aberta no modal de edição (null = fechado). */
   const [editandoRecorrencia, setEditandoRecorrencia] = useState(null);
+  /** Recorrência esperando confirmação para encerrar. */
+  const [recorrenciaParaEncerrar, setRecorrenciaParaEncerrar] = useState(null);
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
 
   const { currency, currencies, setCurrency, formatValue } = useCurrency();
 
@@ -127,19 +131,6 @@ export default function Settings() {
   };
 
   const handleDeleteAccount = async () => {
-    if (
-      !window.confirm(
-        'Tem certeza que deseja excluir sua conta? Esta ação é irreversível.',
-      )
-    )
-      return;
-    if (
-      !window.confirm(
-        'TODOS os seus dados serão perdidos permanentemente. Confirmar exclusão?',
-      )
-    )
-      return;
-
     setLoading(true);
     try {
       // A API admin (auth.admin.deleteUser) exige a service_role key e não
@@ -153,6 +144,7 @@ export default function Settings() {
       showMessage('error', error.message);
     } finally {
       setLoading(false);
+      setConfirmandoExclusao(false);
     }
   };
 
@@ -178,20 +170,16 @@ export default function Settings() {
 
   /**
    * Encerra a recorrência: para de gerar lançamentos futuros. Os lançamentos já
-   * criados ficam no histórico — a regra é desativada, não apagada.
+   * criados ficam no histórico — a regra é desativada, não apagada. A
+   * confirmação é do diálogo (ver ConfirmDialog no fim da tela).
    */
-  const handleEncerrarRecorrencia = async (recorrencia) => {
-    if (
-      !window.confirm(
-        'Encerrar esta recorrência? Nenhum lançamento novo será gerado (os que já existem continuam no histórico).',
-      )
-    ) {
-      return;
-    }
+  const handleEncerrarRecorrencia = async () => {
+    if (!recorrenciaParaEncerrar) return;
 
-    setEncerrandoId(recorrencia.id);
-    const { error } = await encerrarRecorrencia(recorrencia.id);
+    setEncerrandoId(recorrenciaParaEncerrar.id);
+    const { error } = await encerrarRecorrencia(recorrenciaParaEncerrar.id);
     setEncerrandoId(null);
+    setRecorrenciaParaEncerrar(null);
 
     if (error) {
       showMessage('error', error);
@@ -538,7 +526,7 @@ export default function Settings() {
 
                       <button
                         type='button'
-                        onClick={() => handleEncerrarRecorrencia(recorrencia)}
+                        onClick={() => setRecorrenciaParaEncerrar(recorrencia)}
                         disabled={encerrandoId === recorrencia.id}
                         className='flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-monkey-danger bg-monkey-danger/10 border border-monkey-danger/20 hover:bg-monkey-danger/20 transition-colors disabled:opacity-60'
                       >
@@ -651,7 +639,7 @@ export default function Settings() {
                   não poderão ser recuperados.
                 </p>
                 <button
-                  onClick={handleDeleteAccount}
+                  onClick={() => setConfirmandoExclusao(true)}
                   disabled={loading}
                   className='w-full py-3 px-4 rounded-lg bg-monkey-danger/10 border border-monkey-danger/30 text-monkey-danger font-medium hover:bg-monkey-danger/20 transition-colors flex items-center justify-center gap-2'
                 >
@@ -712,6 +700,26 @@ export default function Settings() {
           showMessage('success', 'Recorrência atualizada');
           refetchRecorrencias();
         }}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(recorrenciaParaEncerrar)}
+        title='Encerrar esta recorrência?'
+        description='Nenhum lançamento novo será gerado. Os que já existem continuam no histórico.'
+        confirmLabel='Encerrar'
+        loading={Boolean(encerrandoId)}
+        onConfirm={handleEncerrarRecorrencia}
+        onCancel={() => setRecorrenciaParaEncerrar(null)}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmandoExclusao}
+        title='Excluir sua conta?'
+        description='Transações, recorrências e preferências são apagadas para sempre. Esta ação não pode ser desfeita.'
+        confirmLabel='Excluir minha conta'
+        loading={loading}
+        onConfirm={handleDeleteAccount}
+        onCancel={() => setConfirmandoExclusao(false)}
       />
     </div>
   );

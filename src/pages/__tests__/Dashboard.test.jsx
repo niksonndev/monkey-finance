@@ -13,6 +13,7 @@ import Dashboard from '../Dashboard';
 const estado = vi.hoisted(() => ({
   transacoes: [],
   erro: null,
+  deletes: [],
   // Objeto fixo: identidade estável, senão o efeito do hook busca em laço.
   usuario: { id: 'usuario-teste', email: 'teste@exemplo.com' },
 }));
@@ -35,7 +36,10 @@ vi.mock('../../lib/supabaseClient', () => ({
         select: () => cadeia,
         insert: () => cadeia,
         update: () => cadeia,
-        delete: () => cadeia,
+        delete: () => {
+          estado.deletes.push(true);
+          return cadeia;
+        },
         eq: () => cadeia,
         order: () => cadeia,
         then: (resolve) =>
@@ -120,5 +124,46 @@ describe('Dashboard', () => {
       ).toBeTruthy(),
     );
     expect(screen.queryByText('Nenhuma transação')).toBeNull();
+  });
+
+  it('só exclui depois de confirmar no diálogo', async () => {
+    estado.transacoes = [doMes];
+    estado.erro = null;
+    estado.deletes = [];
+
+    montar();
+    await waitFor(() =>
+      expect(screen.getByText('Mercado do mês')).toBeTruthy(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Excluir transação' }));
+
+    // A confirmação é da própria interface, não do pop-up do navegador.
+    expect(screen.getByRole('alertdialog')).toBeTruthy();
+    expect(estado.deletes).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Excluir' }));
+
+    await waitFor(() => expect(estado.deletes).toHaveLength(1));
+  });
+
+  it('cancelar a confirmação não apaga nada', async () => {
+    estado.transacoes = [doMes];
+    estado.erro = null;
+    estado.deletes = [];
+
+    montar();
+    await waitFor(() =>
+      expect(screen.getByText('Mercado do mês')).toBeTruthy(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Excluir transação' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('alertdialog')).toBeNull(),
+    );
+    expect(estado.deletes).toHaveLength(0);
+    expect(screen.getByText('Mercado do mês')).toBeTruthy();
   });
 });

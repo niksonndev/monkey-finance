@@ -8,6 +8,7 @@ import TransactionList from '../components/TransactionList';
 import TransactionModal from '../components/TransactionModal';
 import Filters from '../components/Filters';
 import MonthNavigator from '../components/MonthNavigator';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useTransactionPage } from '../hooks/useTransactionPage';
 
 export default function Dashboard() {
@@ -33,7 +34,11 @@ export default function Dashboard() {
     fecharModal,
     handleSave,
     handleSuccess,
-    handleDelete,
+    pedirExclusao,
+    transacaoParaExcluir,
+    excluindo,
+    cancelarExclusao,
+    confirmarExclusao,
   } = useTransactionPage();
 
   // Cards e gráficos usam o mês inteiro, não o resultado do filtro: filtrar a
@@ -100,7 +105,7 @@ export default function Dashboard() {
             <TransactionList
               transactions={filteredTransactions}
               onEdit={abrirModal}
-              onDelete={handleDelete}
+              onDelete={pedirExclusao}
               loading={carregandoInicial}
               error={error}
               onRetry={refetch}
@@ -143,6 +148,23 @@ export default function Dashboard() {
         onSuccess={handleSuccess}
         onSave={handleSave}
         transaction={editingTransaction}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(transacaoParaExcluir)}
+        title='Excluir esta transação?'
+        description={
+          transacaoParaExcluir
+            ? `${
+                transacaoParaExcluir.description ||
+                transacaoParaExcluir.category ||
+                'Lançamento'
+              } sai da sua lista. Não dá para desfazer.`
+            : ''
+        }
+        loading={excluindo}
+        onConfirm={confirmarExclusao}
+        onCancel={cancelarExclusao}
       />
     </div>
   );
