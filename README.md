@@ -88,7 +88,8 @@ src/
                   diálogo de confirmação, gráfico, casca do app
   hooks/          useTransactions (dados), useTransactionPage (mês, filtros e
                   modal compartilhados pelas duas telas de lista),
-                  useRecurring (regras e geração das vencidas)
+                  useRecurring (regras e geração das vencidas),
+                  useInstallPrompt (sugestão de instalação do PWA)
   context/        AuthContext (sessão) e CurrencyContext (moeda do app)
   utils/          formatters (datas e moeda), filtros e agrupamento da lista
   constants/      categorias e moedas
@@ -115,3 +116,8 @@ supabase/         migrations
   categoria própria.
 - **Chaves de `localStorage` mantêm o prefixo antigo (`monkeynanca:`)** de
   propósito: renomear apagaria moeda e preferências de quem já usa o app.
+- **A sugestão de instalação é uma janela flutuante e pode ser dispensada.** Ela
+  só aparece quando o navegador oferece a instalação (`beforeinstallprompt`) ou
+  no iPhone, onde esse evento não existe e a janela ensina o caminho manual
+  (Compartilhar → Adicionar à Tela de Início). Fechar no X vale por uma semana —
+  depois disso o convite volta — e quem já abriu o app instalado não vê nada.
