@@ -58,9 +58,7 @@ export default function DashboardCards({ stats }) {
             </div>
 
             <div className='min-w-0'>
-              <p className='truncate text-xs text-monkey-muted'>
-                {card.title}
-              </p>
+              <p className='truncate text-xs text-monkey-muted'>{card.title}</p>
               <p
                 className={`truncate text-base font-bold tabular-nums sm:text-lg ${
                   negativo ? 'text-monkey-danger' : 'text-monkey-text'

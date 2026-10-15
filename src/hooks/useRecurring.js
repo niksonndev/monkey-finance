@@ -74,7 +74,10 @@ async function gerarVencidas(userId) {
         .eq('user_id', userId);
 
       if (erroUpdate) {
-        console.error('Erro ao avançar a próxima data da recorrência:', erroUpdate);
+        console.error(
+          'Erro ao avançar a próxima data da recorrência:',
+          erroUpdate,
+        );
       }
     }
 

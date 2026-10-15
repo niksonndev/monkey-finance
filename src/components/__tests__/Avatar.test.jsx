@@ -15,7 +15,9 @@ describe('Avatar', () => {
 
   it('aceita a foto no campo picture (formato antigo do Google)', () => {
     render(
-      <Avatar user={{ user_metadata: { picture: 'https://exemplo.com/p.png' } }} />,
+      <Avatar
+        user={{ user_metadata: { picture: 'https://exemplo.com/p.png' } }}
+      />,
     );
     expect(screen.getByAltText('').getAttribute('src')).toBe(
       'https://exemplo.com/p.png',
@@ -40,7 +42,12 @@ describe('Avatar', () => {
   it('se a foto falhar, o fallback com inicial continua no DOM', () => {
     render(
       <Avatar
-        user={{ user_metadata: { avatar_url: 'https://ruim/404.jpg', full_name: 'Nik' } }}
+        user={{
+          user_metadata: {
+            avatar_url: 'https://ruim/404.jpg',
+            full_name: 'Nik',
+          },
+        }}
       />,
     );
     // o fallback existe desde o início, atrás da foto

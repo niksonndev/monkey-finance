@@ -60,9 +60,7 @@ describe('moeda global do app', () => {
       <TransactionList transactions={[transacao]} onEdit={() => {}} />,
     );
 
-    await waitFor(() =>
-      expect(texto(container)).toContain('R$ 50,00'),
-    );
+    await waitFor(() => expect(texto(container)).toContain('R$ 50,00'));
   });
 
   it('troca a unidade da lista inteira ao mudar para euro', async () => {

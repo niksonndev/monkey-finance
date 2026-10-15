@@ -18,7 +18,10 @@ export const paraDataISO = (data) => format(data, 'yyyy-MM-dd');
  * vez de somar mês a mês sobre o resultado: assim o dia não "derrapa"
  * (31/01 → 28/02 → 31/03, e não → 28/03).
  */
-export function ocorrenciasVencidas({ next_date, frequency }, hoje = new Date()) {
+export function ocorrenciasVencidas(
+  { next_date, frequency },
+  hoje = new Date(),
+) {
   const ancora = parseLocalDate(next_date);
   if (!ancora || Number.isNaN(ancora.getTime())) {
     return { vencidas: [], proxima: null };

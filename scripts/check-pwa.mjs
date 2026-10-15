@@ -50,7 +50,8 @@ for (const file of [
   'icons/favicon-32.png',
   'icons/favicon-16.png',
 ]) {
-  if (!existsSync(join(DIST, file))) problems.push(`faltando no build: ${file}`);
+  if (!existsSync(join(DIST, file)))
+    problems.push(`faltando no build: ${file}`);
 }
 
 // 2. index.html: o 404.html precisa ser cópia fiel dele (deep link no Pages)
@@ -106,7 +107,9 @@ if (manifest) {
   for (const field of ['start_url', 'scope']) {
     const valor = String(manifest[field] ?? '');
     if (valor.startsWith('/')) {
-      problems.push(`manifest.${field} absoluto ("${valor}") em vez de relativo`);
+      problems.push(
+        `manifest.${field} absoluto ("${valor}") em vez de relativo`,
+      );
     }
   }
 

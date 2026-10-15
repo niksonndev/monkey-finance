@@ -51,27 +51,27 @@ function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-      <Route
-        path='/login'
-        element={
-          <PublicRoute>
-            <Login />
-          </PublicRoute>
-        }
-      />
-      <Route
-        element={
-          <PrivateRoute>
-            <Layout />
-          </PrivateRoute>
-        }
-      >
-        <Route path='/dashboard' element={<Dashboard />} />
-        <Route path='/transactions' element={<Transactions />} />
-        <Route path='/settings' element={<Settings />} />
-      </Route>
-      <Route path='/' element={<Navigate to='/dashboard' replace />} />
-      <Route path='*' element={<Navigate to='/dashboard' replace />} />
+        <Route
+          path='/login'
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
+          <Route path='/dashboard' element={<Dashboard />} />
+          <Route path='/transactions' element={<Transactions />} />
+          <Route path='/settings' element={<Settings />} />
+        </Route>
+        <Route path='/' element={<Navigate to='/dashboard' replace />} />
+        <Route path='*' element={<Navigate to='/dashboard' replace />} />
       </Routes>
     </Suspense>
   );

@@ -49,9 +49,7 @@ export default function Login() {
   // renderização, não num efeito: assim não há segundo render, e o hash é
   // limpo na hora (senão a mensagem voltaria no F5).
   const [error, setError] = useState(() => {
-    const params = new URLSearchParams(
-      window.location.hash.replace(/^#/, ''),
-    );
+    const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     const descricao = params.get('error_description');
 
     if (!descricao) return '';

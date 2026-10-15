@@ -27,7 +27,11 @@ const PRECACHE_PATTERN = /\.(?:js|css|html|svg|png|ico|webmanifest|woff2?)$/;
  * manifesto (senão o SW trava atualizações), e o 404.html (cópia do index.html
  * que existe só para deep link no Pages).
  */
-const PRECACHE_IGNORE = new Set(['sw.js', 'precache-manifest.json', '404.html']);
+const PRECACHE_IGNORE = new Set([
+  'sw.js',
+  'precache-manifest.json',
+  '404.html',
+]);
 
 function listFiles(dir) {
   return readdirSync(dir).flatMap((entry) => {

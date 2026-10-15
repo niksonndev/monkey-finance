@@ -20,9 +20,7 @@ export default function MobileNav({ onMenuClick }) {
             alt='Monkey Finance'
             className='h-8 w-8 rounded-lg'
           />
-          <span className='font-bold text-monkey-text'>
-            Monkey Finance
-          </span>
+          <span className='font-bold text-monkey-text'>Monkey Finance</span>
         </div>
 
         <div className='flex items-center gap-3'>

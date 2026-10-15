@@ -1,10 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  CreditCard,
-  Settings,
-  LogOut,
-} from 'lucide-react';
+import { LayoutDashboard, CreditCard, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Avatar from './Avatar';
 
@@ -78,9 +73,7 @@ export default function Sidebar({ isOpen, onClose }) {
           {user && (
             <div className='mb-3 flex items-center gap-2.5 rounded-lg bg-monkey-muted/10 px-3 py-2'>
               <Avatar user={user} className='h-8 w-8 shrink-0 text-sm' />
-              <p className='truncate text-xs text-monkey-muted'>
-                {user.email}
-              </p>
+              <p className='truncate text-xs text-monkey-muted'>{user.email}</p>
             </div>
           )}
           <button
@@ -140,9 +133,7 @@ export default function Sidebar({ isOpen, onClose }) {
           {user && (
             <div className='mb-3 flex items-center gap-2.5 rounded-lg bg-monkey-muted/10 px-3 py-2'>
               <Avatar user={user} className='h-8 w-8 shrink-0 text-sm' />
-              <p className='truncate text-xs text-monkey-muted'>
-                {user.email}
-              </p>
+              <p className='truncate text-xs text-monkey-muted'>{user.email}</p>
             </div>
           )}
           <button

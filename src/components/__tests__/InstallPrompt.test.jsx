@@ -58,7 +58,9 @@ describe('InstallPrompt', () => {
 
     expect(janela()).toBeTruthy();
     expect(
-      screen.getByText('Abra direto da tela inicial, sem depender do navegador.'),
+      screen.getByText(
+        'Abra direto da tela inicial, sem depender do navegador.',
+      ),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Instalar' })).toBeTruthy();
   });

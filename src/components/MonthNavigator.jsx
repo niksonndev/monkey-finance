@@ -4,12 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
  * Navegação de mês compartilhada (mês anterior / atual / próximo).
  * `actions` recebe botões extras (ex.: exportar CSV, nova transação).
  */
-export default function MonthNavigator({
-  onPrev,
-  onNext,
-  onCurrent,
-  actions,
-}) {
+export default function MonthNavigator({ onPrev, onNext, onCurrent, actions }) {
   return (
     <div className='flex items-center gap-2 sm:gap-3 flex-wrap'>
       <button

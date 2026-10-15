@@ -1,5 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, Loader2, Repeat, CalendarDays, ChevronDown } from 'lucide-react';
+import {
+  X,
+  Save,
+  Loader2,
+  Repeat,
+  CalendarDays,
+  ChevronDown,
+} from 'lucide-react';
 import { useState } from 'react';
 import { addDays, addMonths, addWeeks, format } from 'date-fns';
 import { supabase } from '../lib/supabaseClient';
@@ -101,7 +108,9 @@ export default function TransactionModal({
     setFormData((prev) => ({
       ...prev,
       type,
-      category: lista.includes(prev.category) ? prev.category : (lista[0] ?? ''),
+      category: lista.includes(prev.category)
+        ? prev.category
+        : (lista[0] ?? ''),
     }));
   };
 
@@ -396,7 +405,10 @@ export default function TransactionModal({
                 </label>
                 <div className='flex gap-1.5'>
                   {ATALHOS_DATA.map((atalho) => {
-                    const valor = format(addDays(new Date(), atalho.dias), 'yyyy-MM-dd');
+                    const valor = format(
+                      addDays(new Date(), atalho.dias),
+                      'yyyy-MM-dd',
+                    );
                     const ativo = formData.date === valor;
                     return (
                       <button

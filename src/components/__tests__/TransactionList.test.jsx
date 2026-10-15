@@ -4,7 +4,9 @@ import TransactionList from '../TransactionList';
 
 // Só o formatador de moeda importa aqui: o componente é testado sem o app.
 vi.mock('../../context/CurrencyContext', () => ({
-  useCurrency: () => ({ formatValue: (valor) => `R$ ${Number(valor).toFixed(2)}` }),
+  useCurrency: () => ({
+    formatValue: (valor) => `R$ ${Number(valor).toFixed(2)}`,
+  }),
 }));
 
 afterEach(cleanup);
@@ -44,7 +46,11 @@ describe('TransactionList > falha de carga', () => {
   it('o botão de tentar de novo chama a recarga', () => {
     const onRetry = vi.fn();
     render(
-      <TransactionList transactions={[]} error='Failed to fetch' onRetry={onRetry} />,
+      <TransactionList
+        transactions={[]}
+        error='Failed to fetch'
+        onRetry={onRetry}
+      />,
     );
 
     fireEvent.click(screen.getByRole('button', { name: /Tentar de novo/ }));

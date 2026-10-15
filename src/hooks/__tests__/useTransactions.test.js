@@ -39,7 +39,8 @@ vi.mock('../../lib/supabaseClient', () => ({
               // Sem recorrências no cenário: o hook materializa as vencidas ao
               // abrir e, se viesse linha aqui, dispararia uma recarga extra que
               // não faz parte do que este teste observa.
-              data: tabela === 'recurring_transactions' ? [] : estado.transacoes,
+              data:
+                tabela === 'recurring_transactions' ? [] : estado.transacoes,
               error: estado.erro,
             });
 
@@ -119,7 +120,9 @@ describe('getSummary', () => {
  */
 describe('useTransactions > carregandoInicial', () => {
   it('vale na primeira carga e não volta numa recarga', async () => {
-    estado.transacoes = [{ id: 't1', type: 'expense', amount: 10, date: '2026-10-01' }];
+    estado.transacoes = [
+      { id: 't1', type: 'expense', amount: 10, date: '2026-10-01' },
+    ];
 
     const { result } = renderHook(() => useTransactions());
 

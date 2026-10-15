@@ -10,7 +10,9 @@ import TransactionModal from '../TransactionModal';
  * componente: o que importa aqui é o comportamento do formulário.
  */
 vi.mock('../../context/AuthContext', () => ({
-  useAuth: () => ({ user: { id: 'teste-usuario', email: 'teste@exemplo.com' } }),
+  useAuth: () => ({
+    user: { id: 'teste-usuario', email: 'teste@exemplo.com' },
+  }),
 }));
 
 vi.mock('../../context/CurrencyContext', () => ({
@@ -132,9 +134,7 @@ describe('TransactionModal', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /Salvar/ }));
     await waitFor(() => {
-      expect(
-        screen.getByText('Informe um valor maior que zero'),
-      ).toBeTruthy();
+      expect(screen.getByText('Informe um valor maior que zero')).toBeTruthy();
     });
     expect(onSave).not.toHaveBeenCalled();
   });

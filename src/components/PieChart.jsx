@@ -1,10 +1,7 @@
 import { useMemo } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
-import {
-  CATEGORY_COLORS,
-  DEFAULT_CHART_COLORS,
-} from '../constants/categories';
+import { CATEGORY_COLORS, DEFAULT_CHART_COLORS } from '../constants/categories';
 import { useCurrency } from '../context/CurrencyContext';
 
 // Só o que a rosca precisa: a legenda nativa do Chart.js não é usada (a lista
@@ -124,7 +121,10 @@ export default function PieChart({
           {/* Legenda: mesma ordem das fatias, com valor e porcentagem */}
           <div className='w-full space-y-2'>
             {slices.map((slice) => (
-              <div key={slice.label} className='flex items-center gap-2 text-sm'>
+              <div
+                key={slice.label}
+                className='flex items-center gap-2 text-sm'
+              >
                 <span
                   aria-hidden='true'
                   className='w-3 h-3 rounded-full flex-shrink-0'

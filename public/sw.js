@@ -166,7 +166,10 @@ async function staleWhileRevalidate(request) {
   const response = await network;
   return (
     response ||
-    new Response('', { status: 504, statusText: 'Offline e sem cópia em cache' })
+    new Response('', {
+      status: 504,
+      statusText: 'Offline e sem cópia em cache',
+    })
   );
 }
 

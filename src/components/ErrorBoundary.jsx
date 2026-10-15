@@ -37,10 +37,7 @@ export default class ErrorBoundary extends Component {
               recarregar — se o problema persistir, entre em contato com o
               suporte.
             </p>
-            <button
-              onClick={this.handleReload}
-              className='btn-primary w-full'
-            >
+            <button onClick={this.handleReload} className='btn-primary w-full'>
               Voltar ao início
             </button>
           </div>

@@ -41,6 +41,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Formatação
+        run: pnpm format:check
+
       - name: Testes
         env:
           # O CI roda em UTC por padrão, e as datas do app são do aparelho:

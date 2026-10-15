@@ -55,7 +55,12 @@ export default function ConfirmDialog({
             aria-labelledby='confirm-dialog-title'
             initial={{ opacity: 0, scale: 0.96, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 8, transition: { duration: 0.15 } }}
+            exit={{
+              opacity: 0,
+              scale: 0.96,
+              y: 8,
+              transition: { duration: 0.15 },
+            }}
             transition={{ type: 'spring', damping: 30, stiffness: 320 }}
             className='relative z-10 w-full max-w-sm rounded-2xl border border-monkey-muted/30 bg-monkey-card p-5'
           >
@@ -71,7 +76,9 @@ export default function ConfirmDialog({
                   {title}
                 </h2>
                 {description && (
-                  <p className='mt-1 text-sm text-monkey-muted'>{description}</p>
+                  <p className='mt-1 text-sm text-monkey-muted'>
+                    {description}
+                  </p>
                 )}
               </div>
             </div>

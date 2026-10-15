@@ -12,7 +12,7 @@ Publicado no GitHub Pages: https://niksonndev.github.io/monkey-finance/
 - Tailwind 3 + framer-motion (interface e animações)
 - chart.js (gráfico de rosca por categoria)
 - Supabase (auth Google + Postgres com RLS)
-- vitest + Testing Library (testes), eslint (lint)
+- vitest + Testing Library (testes), eslint (lint) e prettier (formatação)
 - PWA sem dependência: `public/sw.js` lê o `precache-manifest.json` gerado no
   build por `vite.config.js`
 
@@ -40,6 +40,7 @@ binários direto dão o mesmo resultado:
 
 ```bash
 ./node_modules/.bin/eslint src
+./node_modules/.bin/prettier --check .
 ./node_modules/.bin/vitest run
 ./node_modules/.bin/vite build
 node scripts/check-pwa.mjs
@@ -68,13 +69,19 @@ No painel, em Authentication:
 ## Testes, build e deploy
 
 ```bash
-pnpm lint && pnpm test && pnpm build && node scripts/check-pwa.mjs
+pnpm lint && pnpm format:check && pnpm test && pnpm build && node scripts/check-pwa.mjs
 ```
+
+`pnpm format` (ou `prettier --write .`) deixa tudo no padrão; `pnpm format:check`
+só confere. O `.prettierrc` acompanha o estilo do código: aspas simples também
+no JSX (`jsxSingleQuote`) e vírgula final em toda lista (`trailingComma: all`,
+o padrão do Prettier 3).
 
 `node scripts/check-pwa.mjs` valida o build do PWA (manifest, ícones, precache e
 a base do deploy), que é onde uma mudança passa batido por lint e testes.
 
-O CI (`.github/workflows/ci.yml`) roda lint, testes, build e a checagem do PWA;
+O CI (`.github/workflows/ci.yml`) roda lint, formatação, testes, build e a
+checagem do PWA;
 em push na `master` o job `deploy` publica o `dist/` no GitHub Pages. A suíte de
 testes roda com `TZ=America/Maceio`, porque as datas do app são do aparelho e o
 runner padrão (UTC) não enxergaria erro de fuso.

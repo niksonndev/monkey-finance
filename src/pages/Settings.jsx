@@ -216,7 +216,10 @@ export default function Settings() {
 
       <div className='card'>
         <div className='border-b border-monkey-muted/30'>
-          <nav className='flex gap-1 p-1 overflow-x-auto' aria-label='Configurações'>
+          <nav
+            className='flex gap-1 p-1 overflow-x-auto'
+            aria-label='Configurações'
+          >
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -241,9 +244,7 @@ export default function Settings() {
 
         <div className='pt-5'>
           {activeTab === 'profile' && (
-            <div
-              className='space-y-6 max-w-md'
-            >
+            <div className='space-y-6 max-w-md'>
               <div className='flex items-center gap-4'>
                 <Avatar user={user} className='h-20 w-20 text-2xl' />
                 <div className='min-w-0'>
@@ -320,9 +321,7 @@ export default function Settings() {
           )}
 
           {activeTab === 'currency' && (
-            <div
-              className='space-y-6 max-w-md'
-            >
+            <div className='space-y-6 max-w-md'>
               <div>
                 <h3 className='text-lg font-semibold text-monkey-text mb-2'>
                   Moeda do app
@@ -383,16 +382,14 @@ export default function Settings() {
           )}
 
           {activeTab === 'security' && (
-            <div
-              className='space-y-6 max-w-md'
-            >
+            <div className='space-y-6 max-w-md'>
               <div>
                 <h3 className='text-lg font-semibold text-monkey-text mb-2'>
                   Como você entra
                 </h3>
                 <p className='text-monkey-muted text-sm'>
-                  O Monkey Finance usa somente o login do Google: não existe senha
-                  própria do app para criar, trocar ou esquecer.
+                  O Monkey Finance usa somente o login do Google: não existe
+                  senha própria do app para criar, trocar ou esquecer.
                 </p>
               </div>
 
@@ -413,9 +410,7 @@ export default function Settings() {
           )}
 
           {activeTab === 'recurring' && (
-            <div
-              className='space-y-4 max-w-2xl'
-            >
+            <div className='space-y-4 max-w-2xl'>
               <div>
                 <h3 className='text-lg font-semibold text-monkey-text mb-2'>
                   Recorrências ativas
@@ -483,7 +478,9 @@ export default function Settings() {
                               : 'text-monkey-danger bg-monkey-danger/10'
                           }`}
                         >
-                          {recorrencia.type === 'income' ? 'Receita' : 'Despesa'}
+                          {recorrencia.type === 'income'
+                            ? 'Receita'
+                            : 'Despesa'}
                         </span>
                         <span className='px-2 py-0.5 text-xs font-medium rounded-full bg-monkey-primary/20 text-monkey-primary'>
                           {recorrencia.frequency === 'weekly'
@@ -544,9 +541,7 @@ export default function Settings() {
           )}
 
           {activeTab === 'notifications' && (
-            <div
-              className='space-y-6 max-w-md'
-            >
+            <div className='space-y-6 max-w-md'>
               <div>
                 <h3 className='text-lg font-semibold text-monkey-text mb-2'>
                   Preferências de notificação
@@ -621,9 +616,7 @@ export default function Settings() {
           )}
 
           {activeTab === 'danger' && (
-            <div
-              className='space-y-6 max-w-md'
-            >
+            <div className='space-y-6 max-w-md'>
               <div className='p-4 bg-monkey-danger/10 border border-monkey-danger/20 rounded-lg'>
                 <div className='flex items-center gap-3'>
                   <div className='w-10 h-10 bg-monkey-danger/20 rounded-lg flex items-center justify-center'>

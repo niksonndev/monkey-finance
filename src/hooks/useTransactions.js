@@ -155,19 +155,22 @@ export function useTransactions() {
     [transactions],
   );
 
-  const getCategorySummary = useCallback((type, txs = transactions) => {
-    return txs
-      .filter((t) => t.type === type)
-      .reduce((acc, t) => {
-        // Lançamento sem categoria aparece na legenda do gráfico com o mesmo
-        // rótulo que a lista usa. Antes era "Outros", que ficava ao lado de
-        // "Outro" (a categoria que a pessoa escolhe no formulário) como se
-        // fossem duas coisas diferentes.
-        const category = t.category || 'Sem categoria';
-        acc[category] = (acc[category] || 0) + Number(t.amount);
-        return acc;
-      }, {});
-  }, [transactions]);
+  const getCategorySummary = useCallback(
+    (type, txs = transactions) => {
+      return txs
+        .filter((t) => t.type === type)
+        .reduce((acc, t) => {
+          // Lançamento sem categoria aparece na legenda do gráfico com o mesmo
+          // rótulo que a lista usa. Antes era "Outros", que ficava ao lado de
+          // "Outro" (a categoria que a pessoa escolhe no formulário) como se
+          // fossem duas coisas diferentes.
+          const category = t.category || 'Sem categoria';
+          acc[category] = (acc[category] || 0) + Number(t.amount);
+          return acc;
+        }, {});
+    },
+    [transactions],
+  );
 
   return {
     transactions,

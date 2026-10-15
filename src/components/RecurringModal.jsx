@@ -1,5 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, Loader2, ChevronDown, CalendarDays, Repeat } from 'lucide-react';
+import {
+  X,
+  Save,
+  Loader2,
+  ChevronDown,
+  CalendarDays,
+  Repeat,
+} from 'lucide-react';
 import { useState } from 'react';
 import { CATEGORIES } from '../constants/categories';
 import { currencyInfo } from '../constants/currencies';

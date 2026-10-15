@@ -32,10 +32,14 @@ export function filterAndSortTransactions(transactions, filters) {
     );
   }
   if (filters.minAmount) {
-    result = result.filter((t) => Number(t.amount) >= parseFloat(filters.minAmount));
+    result = result.filter(
+      (t) => Number(t.amount) >= parseFloat(filters.minAmount),
+    );
   }
   if (filters.maxAmount) {
-    result = result.filter((t) => Number(t.amount) <= parseFloat(filters.maxAmount));
+    result = result.filter(
+      (t) => Number(t.amount) <= parseFloat(filters.maxAmount),
+    );
   }
 
   switch (filters.sortBy) {
@@ -49,9 +53,7 @@ export function filterAndSortTransactions(transactions, filters) {
       result.sort((a, b) => Number(a.amount) - Number(b.amount));
       break;
     case 'category':
-      result.sort((a, b) =>
-        (a.category || '').localeCompare(b.category || ''),
-      );
+      result.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
       break;
     default:
       result.sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));

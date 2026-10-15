@@ -32,7 +32,9 @@ vi.mock('../../lib/supabaseClient', () => {
     },
     then: (resolve) =>
       Promise.resolve(
-        erro ? { data: null, error: erro } : { data: estado.dados, error: null },
+        erro
+          ? { data: null, error: erro }
+          : { data: estado.dados, error: null },
       ).then(resolve),
   });
 

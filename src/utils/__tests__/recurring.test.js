@@ -57,8 +57,9 @@ describe('ocorrenciasVencidas', () => {
   });
 
   it('tolera next_date inválido sem quebrar', () => {
-    expect(ocorrenciasVencidas({ next_date: null, frequency: 'monthly' }, hoje))
-      .toEqual({ vencidas: [], proxima: null });
+    expect(
+      ocorrenciasVencidas({ next_date: null, frequency: 'monthly' }, hoje),
+    ).toEqual({ vencidas: [], proxima: null });
     expect(
       ocorrenciasVencidas({ next_date: 'ontem', frequency: 'monthly' }, hoje),
     ).toEqual({ vencidas: [], proxima: null });

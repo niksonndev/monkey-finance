@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  cleanup,
+} from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { format } from 'date-fns';
 import Dashboard from '../Dashboard';
@@ -160,9 +166,7 @@ describe('Dashboard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Excluir transação' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
 
-    await waitFor(() =>
-      expect(screen.queryByRole('alertdialog')).toBeNull(),
-    );
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
     expect(estado.deletes).toHaveLength(0);
     expect(screen.getByText('Mercado do mês')).toBeTruthy();
   });
